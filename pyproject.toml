@@ -1,0 +1,24 @@
+# Choosing a build backend:
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssm"
+version = "0.0.1"
+description = "SSM"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Filippo Olivo, Giovanni Canali", email = "folivo@sissa.it, gcanali@sissa.it" }]
+dynamic = ["dependencies"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["scripts", "tests", "shell", "experiments"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[project.optional-dependencies]
+test = ["pytest"]
