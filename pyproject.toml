@@ -10,15 +10,24 @@ description = "SSM"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
-authors = [{ name = "Filippo Olivo, Giovanni Canali", email = "folivo@sissa.it, gcanali@sissa.it" }]
+authors = [    
+    {name = "Filippo Olivo", email = "folivo@sissa.it"},
+    {name = "Giovanni Canali", email = "gcanali@sissa.it"}
+]
 dynamic = ["dependencies"]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["ssm"]
 exclude = ["scripts", "tests", "shell", "experiments"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 
 [project.optional-dependencies]
-test = ["pytest"]
+dev = ["black @ git+https://github.com/psf/black", "pytest"]
+
+[tool.black]
+line-length = 80
+
+[tool.isort]
+profile = "black"
