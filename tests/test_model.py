@@ -2,16 +2,12 @@ import pytest
 import torch
 from ssm.model.block import S4BaseBlock
 
-x = torch.rand(1000, 25) + 1
+x = torch.rand(1000, 25)
 
 
-# def test_s4_base():
-#     with pytest.raises(TypeError):
-#         S4Base(hidden_dim=10, input_dim=10)
-
-
-def test_s4_base_continuous():
-    model = S4BaseBlock(method="continuous", hidden_dim=10)
+@pytest.mark.parametrize("hippo", [True, False])
+def test_s4_base_continuous(hippo):
+    model = S4BaseBlock(method="continuous", hidden_dim=10, hippo=hippo)
     assert model.A.shape == (10, 10)
     assert model.B.shape == (10, 1)
     assert model.C.shape == (1, 10)
@@ -19,14 +15,16 @@ def test_s4_base_continuous():
     assert not hasattr(model, "B_bar")
 
 
-def test_s4_base_forward():
-    model = S4BaseBlock(method="continuous", hidden_dim=10)
+@pytest.mark.parametrize("hippo", [True, False])
+def test_s4_base_forward(hippo):
+    model = S4BaseBlock(method="continuous", hidden_dim=10, hippo=hippo)
     y = model.forward(x)
     assert y.shape == (1000, 25, 1)
 
 
-def test_s4_recurrent():
-    model = S4BaseBlock(method="recurrent", hidden_dim=10)
+@pytest.mark.parametrize("hippo", [True, False])
+def test_s4_recurrent(hippo):
+    model = S4BaseBlock(method="recurrent", hidden_dim=10, hippo=hippo)
     assert model.A.shape == (10, 10)
     assert model.B.shape == (10, 1)
     assert model.C.shape == (1, 10)
@@ -35,14 +33,16 @@ def test_s4_recurrent():
     assert model.B_bar.shape == (10, 1)
 
 
-def test_s4_recurrent_forward():
-    model = S4BaseBlock(method="recurrent", hidden_dim=10)
+@pytest.mark.parametrize("hippo", [True, False])
+def test_s4_recurrent_forward(hippo):
+    model = S4BaseBlock(method="recurrent", hidden_dim=10, hippo=hippo)
     y = model.forward(x)
     assert y.shape == (1000, 25, 1)
 
 
-def test_s4_fourier():
-    model = S4BaseBlock(method="fourier", hidden_dim=10)
+@pytest.mark.parametrize("hippo", [True, False])
+def test_s4_fourier(hippo):
+    model = S4BaseBlock(method="fourier", hidden_dim=10, hippo=hippo)
     assert model.A.shape == (10, 10)
     assert model.B.shape == (10, 1)
     assert model.C.shape == (1, 10)
@@ -51,7 +51,8 @@ def test_s4_fourier():
     assert model.B_bar.shape == (10, 1)
 
 
-def test_s4_fourier_forward():
-    model = S4BaseBlock(method="fourier", hidden_dim=10, hippo=True)
+@pytest.mark.parametrize("hippo", [True, False])
+def test_s4_fourier_forward(hippo):
+    model = S4BaseBlock(method="fourier", hidden_dim=10, hippo=hippo)
     y = model.forward(x)
     assert y.shape == (1000, 25, 1)
