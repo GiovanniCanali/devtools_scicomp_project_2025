@@ -1,5 +1,6 @@
 import torch
 from torch.nn.functional import pad
+from ...utils import compute_hippo
 
 
 class S4BaseBlock(torch.nn.Module):
@@ -80,7 +81,7 @@ class S4BaseBlock(torch.nn.Module):
 
         # Initialization of A
         A = (
-            self.hippo(hidden_dim)
+            compute_hippo(hidden_dim)
             if hippo
             else torch.rand(self.hidden_dim, self.hidden_dim)
         )
@@ -251,19 +252,3 @@ class S4BaseBlock(torch.nn.Module):
             self.forward = self.forward_fourier
         else:
             raise ValueError(f"Unknown method: {method}")
-
-    @staticmethod
-    def hippo(N):
-        """
-        Definition of the HIPPO initialization for the hidden-to-hidden matrix.
-
-        :param int N: The shape of the matrix.
-        :return: A :math:`(N, N)` matrix initialized with the HIPPO method.
-        :rtype: torch.Tensor
-        """
-        P = torch.sqrt(torch.arange(1, 2 * N, 2, dtype=torch.float32))
-        A = 0.5 * (P[:, None] * P[None, :])
-        A = torch.tril(A, diagonal=-1) - torch.diag(
-            torch.arange(N, dtype=torch.float32)
-        )
-        return -A

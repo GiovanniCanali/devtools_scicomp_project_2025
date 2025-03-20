@@ -1,5 +1,5 @@
 import torch
-from .block.s4_base_block import S4Block
+from .block.s4_base_block import S4BaseBlock
 
 
 class S4(torch.nn.Module):
@@ -41,7 +41,7 @@ class S4(torch.nn.Module):
         super().__init__()
         self.blocks = torch.nn.ModuleList(
             [
-                S4Block(method=method, hidden_dim=hidden_dim, hippo=hippo)
+                S4BaseBlock(method=method, hidden_dim=hidden_dim, hippo=hippo)
                 for _ in range(input_dim)
             ]
         )

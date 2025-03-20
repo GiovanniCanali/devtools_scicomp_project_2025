@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-import math
+from ...utils import compute_hippo
 
 
 class S4AdvancedBlock(nn.Module):
@@ -13,22 +12,6 @@ class S4AdvancedBlock(nn.Module):
             raise NotImplementedError
         else:
             raise ValueError(f"Method {method} not recognized")
-
-
-def hippo(N):
-    """
-    Defining HIPPO matrix for the S4 block.
-    :param int N: Shape of the matrix.
-    :return: A matrix of shape (N, N) initialized according to the rules
-        defined in the paper.
-    :rtype: torch.Tensor
-    """
-    P = torch.sqrt(torch.arange(1, 2 * N, 2, dtype=torch.float32))
-    A = 0.5 * (P[:, None] * P[None, :])
-    A = torch.tril(A, diagonal=-1) - torch.diag(
-        torch.arange(N, dtype=torch.float32)
-    )
-    return -A
 
 
 class S4RecurrentBlock(nn.Module):
