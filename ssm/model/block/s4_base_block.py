@@ -4,7 +4,7 @@ from ...utils import compute_hippo
 
 
 class S4BaseBlock(torch.nn.Module):
-    """
+    r"""
     Implementation of the S4 block.
 
     This block supports three forward pass methods: continuous, recurrent, and
@@ -58,16 +58,17 @@ class S4BaseBlock(torch.nn.Module):
     def __init__(
         self,
         method: str,
+        input_dim: int,
         hidden_dim: int,
         dt: float = 0.1,
         hippo: bool = False,
-        fixed: bool = False,
     ):
         """
         Initialization of the S4 block.
 
         :param str method: The forward computation method.
             Available options are: `"continuous"`, `"recurrent"`, `"fourier"`.
+        :param int input_dim: The input dimension.
         :param int hidden_dim: The hidden state dimension.
         :param float dt: The time step for discretization.
         :param bool hippo: Whether to use the HIPPO matrix for initialization.
@@ -76,31 +77,35 @@ class S4BaseBlock(torch.nn.Module):
         super().__init__()
 
         # Dimensions
+        self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.dt = dt
 
-        # Initialization of A
-        A = (
-            compute_hippo(hidden_dim)
-            if hippo
-            else torch.rand(self.hidden_dim, self.hidden_dim)
-        )
-        if fixed:
-            self.register_buffer("A", A)
+        # Initialize A for all channels
+        if hippo:
+            # For HIPPO, all channels share the same A matrix patterns
+            A_base = compute_hippo(hidden_dim)
+            A = (
+                A_base.unsqueeze(0).expand(input_dim, -1, -1).clone()
+            )  # [input_dim, hidden_dim, hidden_dim]
         else:
-            self.A = torch.nn.Parameter(A)
+            # Otherwise, independent random initialization for each channel
+            A = torch.rand(input_dim, hidden_dim, hidden_dim)
 
-        # Initialization of B and C
-        self.B = torch.nn.Parameter(torch.rand(self.hidden_dim, 1))
-        self.C = torch.nn.Parameter(torch.rand(1, self.hidden_dim))
+        self.A = torch.nn.Parameter(A)
 
-        # Initialization of A_bar and B_bar for the discrete methods
+        self.B = torch.nn.Parameter(torch.rand(input_dim, hidden_dim, 1))
+        self.C = torch.nn.Parameter(torch.rand(input_dim, 1, hidden_dim))
+
         if method != "continuous":
-            self.register_buffer("I", torch.eye(self.hidden_dim))
             self.register_buffer(
-                "A_bar", torch.zeros(self.hidden_dim, self.hidden_dim)
+                "I",
+                torch.eye(hidden_dim).unsqueeze(0).expand(input_dim, -1, -1),
             )
-            self.register_buffer("B_bar", torch.zeros(self.hidden_dim, 1))
+            self.register_buffer(
+                "A_bar", torch.zeros(input_dim, hidden_dim, hidden_dim)
+            )
+            self.register_buffer("B_bar", torch.zeros(input_dim, hidden_dim, 1))
 
     def discretize(self):
         """
@@ -111,62 +116,6 @@ class S4BaseBlock(torch.nn.Module):
         tmp2 = self.I - self.A * self.dt / 2
         self.A_bar = tmp2.inverse() @ tmp
         self.B_bar = tmp2.inverse() @ self.B * self.dt
-
-    def _compute_K(self, L):
-        """
-        Computation of the convolution kernel K used in the Fourier method.
-        K is defined as :math:`K = [C A^0 B, C A^1 B, ..., C A^{L-1} B]`.
-
-        :param int L: The length of the sequence.
-        :return: The convolution kernel :math:`K`.
-        :rtype: torch.Tensor
-        """
-        K = torch.zeros(L, 1, 1)
-
-        # Define A^0
-        A_pow = torch.eye(self.hidden_dim)
-
-        # Compute K
-        for i in range(L - 1):
-            K[i] = self.C @ A_pow @ self.B_bar
-            A_pow = self.A_bar @ A_pow
-
-        K[L - 1] = self.C @ A_pow @ self.B_bar
-        return K
-
-    def forward_continuous(self, x):
-        """
-        Forward pass using the continuous-time dynamics.
-
-        :param torch.Tensor x: The input tensor with shape [B, L, 1].
-        :return: The output tensor with shape [B, L, 1].
-        :rtype: torch.Tensor
-
-        .. note::
-            Times for the hidden states h are shifted by one with respect to the
-            input x. The hidden state h[0] is initialized with zeros.
-        """
-        # Permute the input tensor to [L, B, 1]
-        sequence_length = x.shape[1]
-        x = x.permute(1, 0)
-        if x.dim() == 2:
-            x = x.unsqueeze(-1)
-
-        # Initialize y and h
-        y = torch.empty(x.shape[0], x.shape[1], 1)
-        h = torch.empty(x.shape[0] + 1, x.shape[1], self.hidden_dim)
-
-        # Compute the hidden states and the output
-        h[0] = torch.zeros(x.shape[1], self.hidden_dim)
-        for t in range(sequence_length):
-            h[t + 1] = torch.einsum("ij,bj->bi", self.A, h[t]) + torch.einsum(
-                "ij,bj->bi", self.B, x[t]
-            )
-            y[t] = torch.einsum("ij,bj->bi", self.C, h[t + 1])
-
-        # Permute the output tensor to [B, L, 1]
-        y = y.permute(1, 0, 2)
-        return y
 
     def forward_recurrent(self, x):
         """
@@ -180,30 +129,59 @@ class S4BaseBlock(torch.nn.Module):
             Times for the hidden states h are shifted by one with respect to the
             input x. The hidden state h[0] is initialized with zeros.
         """
-        # Permute the input tensor to [L, B, 1]
-        if x.dim() == 2:
-            x = x.unsqueeze(-1)
-        sequence_length = x.shape[1]
-        x = x.permute(1, 0, 2)
+        batch_size, seq_len = x.shape[0], x.shape[1]
 
-        # Initialize y and h
-        y = torch.empty(x.shape[0], x.shape[1], 1)
-        h = torch.empty(x.shape[0] + 1, x.shape[1], self.hidden_dim)
-
-        # Discretize the continuous-time dynamics
+        # Discretize dynamics for all channels at once
         self.discretize()
 
-        # Compute the hidden states and the output
-        h[0] = torch.zeros(x.shape[1], self.hidden_dim)
-        for t in range(sequence_length):
-            h[t + 1] = torch.einsum(
-                "ij,bj->bi", self.A_bar, h[t]
-            ) + torch.einsum("ij,bj->bi", self.B_bar, x[t])
-            y[t] = torch.einsum("ij,bj->bi", self.C, h[t + 1])
+        h = torch.zeros(
+            batch_size, self.input_dim, self.hidden_dim, device=x.device
+        )  # [B, input_dim, hidden_dim]
 
-        # Permute the output tensor to [B, L, 1]
-        y = y.permute(1, 0, 2)
+        # [B, L, input_dim]
+        y = torch.zeros(batch_size, seq_len, self.input_dim, device=x.device)
+
+        # Iterate over time steps
+        for t in range(seq_len):
+            x_t = x[:, t, :]  # [B, input_dim]
+            h_t = h.transpose(0, 1)  # [input_dim, B, hidden_dim]
+            Ah = torch.bmm(h_t, self.A_bar.transpose(1, 2)).transpose(0, 1)
+            Bx = x_t.unsqueeze(-1) * self.B_bar.squeeze(-1).unsqueeze(0)
+            h = Ah + Bx
+            h_out = h.transpose(0, 1)
+            Ch = torch.bmm(h_out, self.C.transpose(1, 2))
+            y[:, t, :] = Ch.transpose(0, 1).squeeze(-1)
+
         return y
+
+    def _compute_K(self, L):
+        """
+        Computation of the convolution kernel K used in the Fourier method.
+        K is defined as :math:`K = [C A^0 B, C A^1 B, ..., C A^{L-1} B]`.
+
+        :param int L: The length of the sequence.
+        :return: The convolution kernel :math:`K`.
+        :rtype: torch.Tensor
+        """
+        # Create kernel tensor: [input_dim, L]
+        K = torch.zeros(self.input_dim, L, device=self.A.device)
+
+        # Initialize A^0 for all channels (identity matrices)
+        A_pow = self.I.clone()
+
+        # Compute K for all channels at once
+        for i in range(L):
+            # Calculate C·A^i·B for all channels
+            # Output shape: [input_dim, 1, 1]
+            CAB = torch.bmm(torch.bmm(self.C, A_pow), self.B_bar)
+
+            # Store in kernel tensor (squeeze to get scalar value per channel)
+            K[:, i] = CAB.squeeze(-1).squeeze(-1)
+
+            # Update A^i to A^(i+1)
+            A_pow = torch.bmm(self.A_bar, A_pow)
+
+        return K
 
     def forward_fourier(self, x):
         """
@@ -213,37 +191,36 @@ class S4BaseBlock(torch.nn.Module):
         :return: The output tensor with shape [B, L, 1].
         :rtype: torch.Tensor
         """
-        # Discretize the continuous-time dynamics
-        L = x.shape[1]
-        if x.dim() == 2:
-            x = x.unsqueeze(-1)
-        self.discretize()
+        _, seq_len, _ = x.shape
 
-        # Compute the convolution kernel K
-        K = self._compute_K(L)
+        self.discretize()  # Discretize dynamics
 
-        # Apply zero-padding to avoid circular convolution effects
-        x_padded = pad(x, (0, 0, 0, L - 1))
+        x_reshaped = x.transpose(1, 2)
 
-        # Compute the convolution using the Fourier transform
-        x_fft = torch.fft.rfft(x_padded, dim=1)
-        K_fft = torch.fft.rfft(
-            pad(K, (0, 0, 0, 0, 0, x_padded.shape[1] - K.shape[0])), dim=0
-        )
-        y_fft = torch.einsum("bfi,foi->bfo", x_fft, K_fft)
+        K = self._compute_K(seq_len)
+        total_length = 2 * seq_len
 
-        # Compute the inverse Fourier transform
-        y = torch.fft.irfft(y_fft, n=x_padded.shape[1], dim=1)[:, :L, :]
-        return y
+        # Pad input and kernel to avoid circular convolution effects
+        x_padded = pad(x_reshaped, (0, seq_len))
+        K_padded = pad(K, (0, seq_len))
+
+        # Compute FFT of input and kernel
+        x_fft = torch.fft.rfft(x_padded, dim=2)
+        K_fft = torch.fft.rfft(K_padded, dim=1)
+
+        # Element-wise multiplication in frequency domain
+        K_fft = K_fft.unsqueeze(0)  # [1, input_dim, total_length//2+1]
+        y_fft = x_fft * K_fft  # [B, input_dim, total_length//2+1]
+
+        # IFFT back to time domain: [B, input_dim, total_length]
+        y = torch.fft.irfft(y_fft, n=total_length, dim=2)
+
+        # Take only the first seq_len elements
+        y = y[:, :, :seq_len]  # [B, input_dim, L]
+        return y.transpose(1, 2)  # [B, L, input_dim]
 
     def change_forward(self, method):
-        """
-        Change the forward method of the block, depending on chosen `method`.
-
-        :param str method: The forward computation method.
-            Available options are: `"continuous"`, `"recurrent"`, `"fourier"`.
-        :raises ValueError: If an invalid `method` is provided.
-        """
+        """Change the forward method."""
         if method == "continuous":
             self.forward = self.forward_continuous
         elif method == "recurrent":

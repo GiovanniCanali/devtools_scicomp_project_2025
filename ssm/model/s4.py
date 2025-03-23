@@ -1,4 +1,5 @@
 import torch
+from torch.func import vmap
 from .block.s4_base_block import S4BaseBlock
 
 
@@ -39,11 +40,12 @@ class S4(torch.nn.Module):
         :param bool fixed: Whether to use fixed weights.
         """
         super().__init__()
-        self.blocks = torch.nn.ModuleList(
-            [
-                S4BaseBlock(method=method, hidden_dim=hidden_dim, hippo=hippo)
-                for _ in range(input_dim)
-            ]
+
+        self.block = S4BaseBlock(
+            method=method,
+            hidden_dim=hidden_dim,
+            hippo=hippo,
+            input_dim=input_dim,
         )
         self.mixing_fc = torch.nn.Linear(input_dim, output_dim)
 
@@ -55,15 +57,7 @@ class S4(torch.nn.Module):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        # Initialize the output tensor
-        y = []
-
-        # Apply each block to the input tensor
-        for i, block in enumerate(self.blocks):
-            y.append(block(x[..., i]))
-        y = torch.cat(y, dim=-1)
-
-        # Apply the mixing layer
+        y = self.block(x)
         y = self.mixing_fc(y)
         return y
 
@@ -75,5 +69,4 @@ class S4(torch.nn.Module):
             Available options are: `"continuous"`, `"recurrent"`, `"fourier"`.
         """
 
-        for block in self.blocks:
-            block.change_forward(method)
+        self.block.change_forward(method)
