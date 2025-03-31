@@ -49,8 +49,8 @@ class S4BaseBlock(torch.nn.Module):
             instance.forward = instance.forward_continuous
         elif method == "recurrent":
             instance.forward = instance.forward_recurrent
-        elif method == "fourier":
-            instance.forward = instance.forward_fourier
+        elif method == "convolutional":
+            instance.forward = instance.forward_convolutional
         else:
             raise ValueError(f"Unknown method: {method}")
         return instance
@@ -96,16 +96,14 @@ class S4BaseBlock(torch.nn.Module):
 
         self.B = torch.nn.Parameter(torch.rand(input_dim, hidden_dim, 1))
         self.C = torch.nn.Parameter(torch.rand(input_dim, 1, hidden_dim))
-
-        if method != "continuous":
-            self.register_buffer(
-                "I",
-                torch.eye(hidden_dim).unsqueeze(0).expand(input_dim, -1, -1),
-            )
-            self.register_buffer(
-                "A_bar", torch.zeros(input_dim, hidden_dim, hidden_dim)
-            )
-            self.register_buffer("B_bar", torch.zeros(input_dim, hidden_dim, 1))
+        self.register_buffer(
+            "I",
+            torch.eye(hidden_dim).unsqueeze(0).expand(input_dim, -1, -1),
+        )
+        self.register_buffer(
+            "A_bar", torch.zeros(input_dim, hidden_dim, hidden_dim)
+        )
+        self.register_buffer("B_bar", torch.zeros(input_dim, hidden_dim, 1))
 
     def discretize(self):
         """
@@ -183,7 +181,7 @@ class S4BaseBlock(torch.nn.Module):
 
         return K
 
-    def forward_fourier(self, x):
+    def forward_convolutional(self, x):
         """
         Forward pass using the Fourier method.
 
@@ -221,11 +219,9 @@ class S4BaseBlock(torch.nn.Module):
 
     def change_forward(self, method):
         """Change the forward method."""
-        if method == "continuous":
-            self.forward = self.forward_continuous
-        elif method == "recurrent":
+        if method == "recurrent":
             self.forward = self.forward_recurrent
-        elif method == "fourier":
-            self.forward = self.forward_fourier
+        elif method == "convolutional":
+            self.forward = self.forward_convolutional
         else:
             raise ValueError(f"Unknown method: {method}")
