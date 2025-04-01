@@ -73,8 +73,8 @@ class S6Block(torch.nn.Module):
         h = torch.zeros(
             x.shape[0], self.input_dim, self.hidden_dim, device=x.device
         )
-        # Initialize the output tensor of size [B, L, input_dim]
-        y = torch.zeros((*x.shape[:-1], self.input_dim), device=x.device)
+
+        y = []
 
         # Loop over the sequence length
         for t in range(x.shape[1]):
@@ -86,5 +86,7 @@ class S6Block(torch.nn.Module):
             # Update the hidden state
             h = A_bar_t * h + B_bar_t * x_t.unsqueeze(-1)
             # Compute the output
-            y[:, t, :] = torch.sum(h * C_t.unsqueeze(1), dim=-1)
+            y.append(torch.sum(h * C_t.unsqueeze(1), dim=-1))
+        # Stack the output
+        y = torch.stack(y, dim=1)
         return y

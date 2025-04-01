@@ -137,7 +137,7 @@ class S4BaseBlock(torch.nn.Module):
         )  # [B, input_dim, hidden_dim]
 
         # [B, L, input_dim]
-        y = torch.zeros(batch_size, seq_len, self.input_dim, device=x.device)
+        y = []
 
         # Iterate over time steps
         for t in range(seq_len):
@@ -148,8 +148,8 @@ class S4BaseBlock(torch.nn.Module):
             h = Ah + Bx
             h_out = h.transpose(0, 1)
             Ch = torch.bmm(h_out, self.C.transpose(1, 2))
-            y[:, t, :] = Ch.transpose(0, 1).squeeze(-1)
-
+            y.append(Ch.transpose(0, 1).squeeze(-1))
+        y = torch.stack(y, dim=1)  # [B, L, input_dim]
         return y
 
     def _compute_K(self, L):

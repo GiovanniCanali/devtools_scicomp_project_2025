@@ -109,10 +109,7 @@ class S4DBlock(torch.nn.Module):
             x.device
         )  # [B, input_dim, hidden_dim]
 
-        # [B, L, input_dim]
-        y = torch.zeros((*x.shape[:-1], self.input_dim), dtype=x.dtype).to(
-            x.device
-        )
+        y = []
 
         # Iterate over time steps
         for t in range(seq_len):
@@ -120,7 +117,8 @@ class S4DBlock(torch.nn.Module):
             h = self.A_bar.unsqueeze(0) * h + self.B_bar.unsqueeze(
                 0
             ) * x_t.unsqueeze(2)
-            y[:, t, :] = torch.sum(h * self.C.unsqueeze(0), dim=-1).real
+            y.append(torch.sum(h * self.C.unsqueeze(0), dim=-1).real)
+        y = torch.stack(y, dim=1)
         return y
 
     def forward_convolutional(self, x):
