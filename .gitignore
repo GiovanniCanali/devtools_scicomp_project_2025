@@ -170,3 +170,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 #Additional command\n*.dat\n*.data
+
+# For mac 
+*.DS_Store  
