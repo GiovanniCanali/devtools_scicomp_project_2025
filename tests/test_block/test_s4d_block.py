@@ -13,7 +13,7 @@ x = torch.rand(1000, 25, 5)
 def test_s4d_constructor(method, init_method, discretisation):
     model = S4DBlock(
         method=method,
-        hidden_dim=10,
+        hid_dim=10,
         input_dim=5,
         discretization=discretisation,
         initialization=init_method,
@@ -21,7 +21,7 @@ def test_s4d_constructor(method, init_method, discretisation):
     assert model.A.shape == (5, 10)
     assert model.B.shape == (5, 10)
     assert model.C.shape == (5, 10)
-    model.discretize()
+    model._discretize()
     assert model.A_bar.shape == (5, 10)
     assert model.B_bar.shape == (5, 10)
 
@@ -33,7 +33,7 @@ def test_s4d_constructor(method, init_method, discretisation):
 def test_s4d_recurrent_forward(init_method, discretisation):
     model = S4DBlock(
         method="recurrent",
-        hidden_dim=10,
+        hid_dim=10,
         input_dim=5,
         initialization=init_method,
         discretization=discretisation,
@@ -49,7 +49,7 @@ def test_s4d_recurrent_forward(init_method, discretisation):
 def test_s4d_convolutional_backward(init_method, discretisation):
     model = S4DBlock(
         method="recurrent",
-        hidden_dim=10,
+        hid_dim=10,
         input_dim=5,
         initialization=init_method,
         discretization=discretisation,
@@ -68,7 +68,7 @@ def test_s4d_convolutional_backward(init_method, discretisation):
 def test_s4d_convolutional_forward(init_method, discretisation):
     model = S4DBlock(
         method="convolutional",
-        hidden_dim=10,
+        hid_dim=10,
         input_dim=5,
         initialization=init_method,
         discretization=discretisation,
@@ -84,7 +84,7 @@ def test_s4d_convolutional_forward(init_method, discretisation):
 def test_s4_convolutional_backward(init_method, discretisation):
     model = S4DBlock(
         method="convolutional",
-        hidden_dim=10,
+        hid_dim=10,
         input_dim=5,
         initialization=init_method,
         discretization=discretisation,

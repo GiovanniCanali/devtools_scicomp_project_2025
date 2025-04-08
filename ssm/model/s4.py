@@ -1,9 +1,5 @@
 import torch
-from .block.s4_base_block import S4BaseBlock
-from .block.s4_low_rank_block import S4LowRankBlock
-from .block.s4d_block import S4DBlock
-from .block.s6_block import S6Block
-from torch.nn import Embedding
+from .block import S4BaseBlock, S4LowRankBlock, S4DBlock, S6Block
 
 
 class S4(torch.nn.Module):
@@ -15,7 +11,7 @@ class S4(torch.nn.Module):
     improved scalability and performance compared to traditional recurrent
     architectures.
 
-    This class supports three implementations of the underlying block:
+    This class supports two implementations of the underlying block:
 
     - **Continuous**: It uses the block's continuous-time dynamics.
     - **Recurrent**: It applies discretized dynamics for sequential processing.
@@ -32,7 +28,7 @@ class S4(torch.nn.Module):
         self,
         input_dim,
         model_dim,
-        hidden_dim,
+        hid_dim,
         output_dim,
         block_type="S4",
         n_layers=2,
@@ -68,9 +64,7 @@ class S4(torch.nn.Module):
         layers = []
         for _ in range(n_layers):
             layers.append(
-                block_class(
-                    hidden_dim=hidden_dim, input_dim=model_dim, **kwargs
-                )
+                block_class(hid_dim=hid_dim, input_dim=model_dim, **kwargs)
             )
             layers.append(func())
             layers.append(torch.nn.Linear(model_dim, model_dim))

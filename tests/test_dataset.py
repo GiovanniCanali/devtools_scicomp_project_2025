@@ -1,5 +1,6 @@
 from ssm.dataset import CopyDataset
 
+
 def test_constructor():
     CopyDataset(
         sequence_len=10,
@@ -8,6 +9,7 @@ def test_constructor():
         N=20,
         selective=True,
     )
+
 
 def test_getitem():
     dataset = CopyDataset(
