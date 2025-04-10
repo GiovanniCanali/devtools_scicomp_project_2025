@@ -27,7 +27,6 @@ class MambaBlock(torch.nn.Module):
         ssm_type="S4",
         **kwargs,
     ):
-
         """
         Initializes the Mamba block with the specified parameters.
 
@@ -48,13 +47,15 @@ class MambaBlock(torch.nn.Module):
         if "input_dim" in kwargs:
             warnings.warn(
                 "input_dim is determined by the input_net, ignoring "
-                "kwargs['input_dim']")
+                "kwargs['input_dim']"
+            )
             kwargs.pop("input_dim")
         kwargs["input_dim"] = expansion_factor * input_dim
         if "hid_dim" in kwargs:
             warnings.warn(
-                "hidden_dim is determined by the input_net, ignoring " 
-                "kwargs['hidden_dim']")
+                "hidden_dim is determined by the input_net, ignoring "
+                "kwargs['hidden_dim']"
+            )
             kwargs.pop("hidden_dim")
         kwargs["hid_dim"] = expansion_factor * input_dim
 
