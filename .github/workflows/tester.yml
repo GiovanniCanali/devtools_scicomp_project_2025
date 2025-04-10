@@ -33,6 +33,4 @@ jobs:
       - name: Install Black
         run: python -m pip install black
       - name: Check formatting with Black
-        run: python -m black --check ssm/
-
-  
+        run: python -m black --check ssm/ tests/
