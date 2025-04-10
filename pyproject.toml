@@ -17,7 +17,7 @@ authors = [
 dynamic = ["dependencies"]
 
 [tool.setuptools.packages.find]
-include = ["ssm"]
+include = ["ssm*"]
 exclude = ["scripts", "tests", "shell", "experiments"]
 
 [tool.setuptools.dynamic]
