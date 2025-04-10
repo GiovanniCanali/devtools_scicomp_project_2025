@@ -96,8 +96,9 @@ class S4DBlock(S4BlockInterface):
         """
         tmp = 1 + self.A * self.dt / 2
         tmp2 = 1 - self.A * self.dt / 2
-        self.A_bar = 1 / tmp2 * tmp
-        self.B_bar = 1 / tmp2 * self.B * self.dt
+        A_bar = 1 / tmp2 * tmp
+        B_bar = 1 / tmp2 * self.B * self.dt
+        return A_bar, B_bar
 
     def _discretize_zoh(self):
         """
@@ -105,10 +106,12 @@ class S4DBlock(S4BlockInterface):
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
         tmp = self.A * self.dt
-        self.A_bar = torch.exp(tmp)
-        self.B_bar = (self.A_bar - 1) * self.B * self.dt / tmp
+        A_bar = torch.exp(tmp)
+        B_bar = (A_bar - 1) * self.B * self.dt / tmp
+        return A_bar, B_bar
 
-    def vandermonde_matrix(self, L):
+    @staticmethod
+    def vandermonde_matrix(L, A_bar):
         """
         Compute the Vandermonde matrix for the diagonal S4 block.
 
@@ -116,18 +119,19 @@ class S4DBlock(S4BlockInterface):
         :return: The Vandermonde matrix.
         :rtype: torch.Tensor
         """
-        exponents = torch.arange(L, device=self.A_bar.device)
-        return self.A_bar.unsqueeze(-1) ** exponents
+        exponents = torch.arange(L, device=A_bar.device)
+        return A_bar.unsqueeze(-1) ** exponents
 
     def _compute_K(self, L):
         """
         Computation of the kernel K used in the convolutional method.
         """
+        A_bar, B_bar = self._discretize()
         # Compute the Vandermonde matrix
-        V = self.vandermonde_matrix(L)
+        V = self.vandermonde_matrix(L, A_bar)
 
         # Compute the kernel K using the Vandermonde matrix
-        S = self.B_bar * self.C
+        S = B_bar * self.C
         return torch.bmm(S.unsqueeze(1), V).squeeze(1).real
 
     @staticmethod

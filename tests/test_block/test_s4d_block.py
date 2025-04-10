@@ -21,9 +21,9 @@ def test_s4d_constructor(method, init_method, discretisation):
     assert model.A.shape == (5, 10)
     assert model.B.shape == (5, 10)
     assert model.C.shape == (5, 10)
-    model._discretize()
-    assert model.A_bar.shape == (5, 10)
-    assert model.B_bar.shape == (5, 10)
+    A_bar, B_bar = model._discretize()
+    assert A_bar.shape == (5, 10)
+    assert B_bar.shape == (5, 10)
 
 
 @pytest.mark.parametrize(

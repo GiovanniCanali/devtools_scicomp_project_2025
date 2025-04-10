@@ -85,20 +85,6 @@ class S4BlockInterface(torch.nn.Module, ABC):
             torch.nn.Parameter(C),
         )
 
-        # Initialize matrices A_bar, B_bar
-        self.register_buffer("A_bar", torch.empty(A.shape))
-        self.register_buffer("B_bar", torch.empty(B.shape))
-
-    def _discretize(self):
-        """
-        Discretization of the continuous-time dynamics to obtain the matrices
-        :math:`A_{bar}` and :math:`B_{bar}`.
-        """
-        matrix_1 = self.I + 0.5 * self.A * self.dt
-        matrix_2 = (self.I - 0.5 * self.A * self.dt).inverse()
-        self.A_bar = matrix_2 @ matrix_1
-        self.B_bar = matrix_2 @ self.B * self.dt
-
     def forward_recurrent(self, x):
         """
         Forward pass using the recurrent method.
@@ -107,9 +93,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        # Discretize the dynamics
-        self._discretize()
-
+        A_bar, B_bar = self._discretize()
         # Store the batch size and the sequence length
         B, L = x.shape[0], x.shape[1]
 
@@ -119,7 +103,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         # Initialize initial hidden state
         h = torch.zeros(B, self.input_dim, self.hid_dim, device=x.device)
 
-        A_bar, B_bar, C = self._preprocess()
+        A_bar, B_bar, C = self._preprocess(A_bar=A_bar, B_bar=B_bar, C=self.C)
 
         # Iterate over time steps
         for t in range(L):
@@ -135,8 +119,6 @@ class S4BlockInterface(torch.nn.Module, ABC):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        # Discretize the dynamics
-        self._discretize()
 
         # Store the sequence length
         L = x.shape[1]
@@ -188,11 +170,12 @@ class S4BlockInterface(torch.nn.Module, ABC):
         :rtype: torch.Tensor
         """
 
-    def _preprocess(self):
+    @staticmethod
+    def _preprocess(A_bar, B_bar, C):
         """
         Preprocessing of the discretized matrices A_bar and B_bar.
 
         :return: The preprocessed matrices A_bar, B_bar, and C.
         :rtype: tuple
         """
-        return self.A_bar, self.B_bar, self.C
+        return A_bar, B_bar, C

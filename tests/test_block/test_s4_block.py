@@ -13,9 +13,9 @@ def test_s4_constructor(method, hippo):
     assert model.A.shape == (5, 10, 10)
     assert model.B.shape == (5, 10, 1)
     assert model.C.shape == (5, 1, 10)
-    model._discretize()
-    assert model.A_bar.shape == (5, 10, 10)
-    assert model.B_bar.shape == (5, 10, 1)
+    A_bar, B_bar = model._discretize()
+    assert A_bar.shape == (5, 10, 10)
+    assert B_bar.shape == (5, 10, 1)
 
 
 @pytest.mark.parametrize("hippo", [True, False])

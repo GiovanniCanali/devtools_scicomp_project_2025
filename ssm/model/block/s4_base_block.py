@@ -78,6 +78,7 @@ class S4BaseBlock(S4BlockInterface):
         :return: The convolution kernel :math:`K`.
         :rtype: torch.Tensor
         """
+        A_bar, B_bar = self._discretize()
         # Create kernel tensor: [input_dim, L]
         K = torch.zeros(self.input_dim, L, device=self.A.device)
 
@@ -86,26 +87,38 @@ class S4BaseBlock(S4BlockInterface):
 
         for i in range(L):
             # Compute C·A^i·B for all channels. Shape: [input_dim, 1, 1]
-            CAB = torch.bmm(torch.bmm(self.C, A_pow), self.B_bar)
+            CAB = torch.bmm(torch.bmm(self.C, A_pow), B_bar)
 
             # Squeeze to get scalar value per channel
             K[:, i] = CAB.squeeze(-1).squeeze(-1)
 
             # Update A^i to A^(i+1)
-            A_pow = torch.bmm(self.A_bar, A_pow)
+            A_pow = torch.bmm(A_bar, A_pow)
 
         return K
 
-    def _preprocess(self):
+    def _discretize(self):
+        """
+        Discretization of the continuous-time dynamics to obtain the matrices
+        :math:`A_{bar}` and :math:`B_{bar}`.
+        """
+        matrix_1 = self.I + 0.5 * self.A * self.dt
+        matrix_2 = (self.I - 0.5 * self.A * self.dt).inverse()
+        A_bar = matrix_2 @ matrix_1
+        B_bar = matrix_2 @ self.B * self.dt
+        return A_bar, B_bar
+
+    @staticmethod
+    def _preprocess(A_bar, B_bar, C):
         """
         Preprocessing of the discretized matrices A_bar and B_bar.
 
         :return: The preprocessed matrices A_bar, B_bar, and C.
         :rtype: tuple
         """
-        A_bar = self.A_bar.transpose(1, 2).unsqueeze(0)
-        B_bar = self.B_bar.squeeze(-1).unsqueeze(0)
-        C = self.C.transpose(1, 2).unsqueeze(0)
+        A_bar = A_bar.transpose(1, 2).unsqueeze(0)
+        B_bar = B_bar.squeeze(-1).unsqueeze(0)
+        C = C.transpose(1, 2).unsqueeze(0)
 
         return A_bar, B_bar, C
 
