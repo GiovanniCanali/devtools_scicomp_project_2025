@@ -7,15 +7,22 @@ class S4(torch.nn.Module):
     Implementation of the Structured State Space Sequence (S4) model.
 
     The S4 model is designed for efficiently modeling long-range dependencies in
-    sequential data using structured state space representations. It enables
-    improved scalability and performance compared to traditional recurrent
-    architectures.
+    sequential data using structured state space representations.
+    It enables improved scalability and performance compared to traditional
+    recurrent architectures.
 
-    This class supports two implementations of the underlying block:
+    The model is composed of several S4 blocks, each followed by an activation
+    function and a linear layer, as explained in the referenced paper.
+    The S4 blocks can be of different types, including the basic S4, and the
+    low-rank and diagonal variants.
 
-    - **Continuous**: It uses the block's continuous-time dynamics.
+    Each block supports two forward pass methods:
+
     - **Recurrent**: It applies discretized dynamics for sequential processing.
-    - **Fourier**: It leverages the Fourier transform to compute convolutions.
+    - **Convolutional**: It uses the Fourier transform to compute convolutions.
+
+    .. warning::
+        The low-rank S4 block supports only the convolutional forward pass.
 
     .. seealso::
         **Original Reference**: Gu, A., Goel, K., and Re, G. (2021).
@@ -27,71 +34,84 @@ class S4(torch.nn.Module):
     def __init__(
         self,
         input_dim,
-        model_dim,
         hid_dim,
         output_dim,
-        block_type="S4",
+        method,
         n_layers=2,
-        func=torch.nn.ReLU,
+        block_type="S4",
+        activation=torch.nn.ReLU,
         **kwargs,
     ):
         """
         Initialization of the S4 model.
 
-        :param int input_dim: The input dimension.
-        :param int model_dim: The dimension of data passed S4 blocks
-        :param int hidden_dim: The hidden dimension.
+        :param int input_dim: The input dimension of the S4 block.
+        :param int hid_dim: The hidden dimension of the S4 block.
         :param int output_dim: The output dimension.
-        :param int n_layers: Number of S4 layers.
-        :param str block_type: The type of S4 block to use.
-            Available options are: `"S4"`, `"S4D"`, `"S4LowRank"`.
-        :param torch.nn.Module func: The activation function.
+        :param str method: The forward computation method for each S4 block.
+            Available options are: `"recurrent"`, `"convolutional"`.
+        :param int n_layers: Number of S4 blocks. Default is 2.
+        :param str block_type: The type of S4 block to use. Available options
+            are: `"S4"`, `"S4D"`, `"S4LowRank"`. Default is `"S4"`.
+        :param torch.nn.Module activation: The activation function.
+            Default is `torch.nn.ReLU`.
         :param dict kwargs: Additional keyword arguments used in the block.
+        :raises ValueError: If the specified `block_type` is not valid.
         """
         super().__init__()
-        if block_type == "S4":
-            block_class = S4BaseBlock
-        elif block_type == "S4D":
-            block_class = S4DBlock
-        elif block_type == "S4LowRank":
-            block_class = S4LowRankBlock
-        elif block_type == "S6":
-            block_class = S6Block
-        else:
-            raise RuntimeError("Unrecognized method {method}")
 
-        self.encoder = torch.nn.Linear(input_dim, model_dim)
+        # Initialize parameters
+        self.block_type = block_type
+
+        # Initialize the block class based on the specified type
+        if self.block_type == "S4":
+            block_class = S4BaseBlock
+        elif self.block_type == "S4D":
+            block_class = S4DBlock
+        elif self.block_type == "S4LowRank":
+            block_class = S4LowRankBlock
+        else:
+            raise ValueError(
+                f"Invalid block type: {self.block_type}"
+                "Available options are: 'S4', 'S4D', 'S4LowRank'."
+            )
+
+        # Initialize the layers
         layers = []
         for _ in range(n_layers):
             layers.append(
-                block_class(hid_dim=hid_dim, input_dim=model_dim, **kwargs)
+                block_class(
+                    input_dim=input_dim,
+                    hid_dim=hid_dim,
+                    method=method,
+                    **kwargs,
+                )
             )
-            layers.append(func())
-            layers.append(torch.nn.Linear(model_dim, model_dim))
+            layers.append(activation())
+            layers.append(torch.nn.Linear(input_dim, input_dim))
         self.layers = torch.nn.Sequential(*layers)
-        self.decode = torch.nn.Linear(model_dim, output_dim)
-        self.soft_max = torch.nn.Softmax(dim=-1)
+
+        # Initialize the decoder to match the output dimension
+        self.decoder = torch.nn.Linear(input_dim, output_dim)
 
     def forward(self, x):
         """
         Forward pass of the S4 model.
 
-        :param torch.Tensor x: The input tensor with shape `(B, L, H)`.
+        :param torch.Tensor x: The input tensor.
         :return: The output tensor.
         :rtype: torch.Tensor
         """
         y = self.layers(x)
-        y = self.decode(y)
-        return y
+        return self.decoder(y)
 
     def change_forward(self, method):
         """
         Change the forward method of each block, depending on chosen `method`.
 
         :param str method: The forward computation method.
-            Available options are: `"continuous"`, `"recurrent"`, `"fourier"`.
+            Available options are: `"recurrent"`, `"convolutional"`.
         """
-
         for layer in self.layers:
             if isinstance(layer, (S4BaseBlock, S4DBlock)):
                 layer.change_forward(method)

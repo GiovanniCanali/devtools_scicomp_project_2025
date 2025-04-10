@@ -44,8 +44,8 @@ class S4DBlock(S4BlockInterface):
         self,
         input_dim,
         hid_dim,
+        method,
         dt=0.1,
-        method="recurrent",
         initialization="S4D-Inv",
         discretization="bilinear",
         **kwargs,
@@ -55,9 +55,9 @@ class S4DBlock(S4BlockInterface):
 
         :param int input_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
-        :param float dt: The time step for discretization. Default is `0.1`.
         :param str method: The forward computation method. Available options
-            are: recurrent, convolutional. Default is `"recurrent"`.
+            are: recurrent, convolutional.
+        :param float dt: The time step for discretization. Default is `0.1`.
         :param str initialization: The method for initializing the A matrix.
             Options are: S4D-Inv, S4D-Lin, S4D-Quad, S4D-Real, real, complex.
             Default is `"S4D-Inv"`.

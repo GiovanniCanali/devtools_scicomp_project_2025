@@ -34,8 +34,8 @@ class S4BaseBlock(S4BlockInterface):
         self,
         input_dim,
         hid_dim,
+        method,
         dt=0.1,
-        method="recurrent",
         hippo=False,
         **kwargs,
     ):
@@ -44,9 +44,9 @@ class S4BaseBlock(S4BlockInterface):
 
         :param int input_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
-        :param float dt: The time step for discretization. Default is `0.1`.
         :param str method: The forward computation method. Available options
-            are: recurrent, convolutional. Default is `"recurrent"`.
+            are: recurrent, convolutional.
+        :param float dt: The time step for discretization. Default is `0.1`.
         :param bool hippo: Whether to use the HIPPO matrix for initialization.
             Default is `False`.
         :param dict kwargs: Additional arguments for the class constructor.

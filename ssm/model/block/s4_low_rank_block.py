@@ -20,10 +20,11 @@ class S4LowRankBlock(S4BlockInterface):
 
     def __init__(
         self,
-        input_dim: int,
-        hid_dim: int,
-        dt: float = 0.1,
-        hippo: bool = True,
+        input_dim,
+        hid_dim,
+        method,
+        dt=0.1,
+        hippo=True,
         **kwargs,
     ):
         """
@@ -31,6 +32,8 @@ class S4LowRankBlock(S4BlockInterface):
 
         :param int input_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
+        :param str method: The forward computation method. Low-rank S4
+            block only supports the convolutional method.
         :param float dt: The time step for discretization. Default is `0.1`.
         :param bool hippo: Whether to use the HIPPO matrix for initialization.
             Default is `True`.
@@ -47,7 +50,7 @@ class S4LowRankBlock(S4BlockInterface):
             A=torch.empty((1)),
             B=B,
             C=C,
-            method="convolutional",
+            method=method,
         )
 
         # Check on method
