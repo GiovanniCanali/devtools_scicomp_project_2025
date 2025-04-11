@@ -44,4 +44,4 @@ def test_s4_low_rank_block_backward(hippo):
     )
     y = model.forward(x.requires_grad_())
     _ = torch.mean(y).backward()
-    assert x._grad.shape == x.shape
+    assert x.grad.shape == x.shape

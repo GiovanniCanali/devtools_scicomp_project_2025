@@ -71,6 +71,8 @@ class S4BlockInterface(torch.nn.Module, ABC):
         self.input_dim = input_dim
         self.hid_dim = hid_dim
         self.dt = dt
+
+        # Check method
         if method not in ["recurrent", "convolutional"]:
             raise ValueError(f"Unknown method: {method}")
         self.method = method
@@ -94,6 +96,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         :rtype: torch.Tensor
         """
         A_bar, B_bar = self._discretize()
+
         # Store the batch size and the sequence length
         B, L = x.shape[0], x.shape[1]
 

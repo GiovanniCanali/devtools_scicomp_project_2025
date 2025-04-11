@@ -6,9 +6,8 @@ from ssm.model import Mamba
 x = torch.randn(15, 10, 5)
 
 
-# TODO : add S6 when ready
 @pytest.mark.parametrize("n_layers", [1, 4])
-@pytest.mark.parametrize("ssm_type", ["S4", "S4D", "S4LowRank"])
+@pytest.mark.parametrize("ssm_type", ["S4", "S4D", "S4LowRank", "S6"])
 @pytest.mark.parametrize("normalization", [True, False])
 @pytest.mark.parametrize("method", ["convolutional", "recurrent"])
 def test_mamba_constructor(n_layers, ssm_type, normalization, method):
@@ -31,9 +30,8 @@ def test_mamba_constructor(n_layers, ssm_type, normalization, method):
         Mamba(n_layers=1)
 
 
-# TODO : add S6 when ready
 @pytest.mark.parametrize("normalization", [True, False])
-@pytest.mark.parametrize("ssm_type", ["S4", "S4D", "S4LowRank"])
+@pytest.mark.parametrize("ssm_type", ["S4", "S4D", "S4LowRank", "S6"])
 @pytest.mark.parametrize("method", ["convolutional", "recurrent"])
 def test_mamba_forward(normalization, ssm_type, method):
 
@@ -55,9 +53,8 @@ def test_mamba_forward(normalization, ssm_type, method):
     assert y.shape == (15, 10, 5)
 
 
-# TODO : add S6 when ready
 @pytest.mark.parametrize("normalization", [True, False])
-@pytest.mark.parametrize("ssm_type", ["S4", "S4D", "S4LowRank"])
+@pytest.mark.parametrize("ssm_type", ["S4", "S4D", "S4LowRank", "S6"])
 @pytest.mark.parametrize("method", ["convolutional", "recurrent"])
 def test_mamba_backward(ssm_type, normalization, method):
 

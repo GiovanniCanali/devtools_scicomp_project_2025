@@ -1,5 +1,5 @@
 import torch
-from .block.mamba_block import MambaBlock
+from .block import MambaBlock
 
 
 class Mamba(torch.nn.Module):

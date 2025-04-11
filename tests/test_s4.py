@@ -80,4 +80,4 @@ def test_s4_backward(method, block_type):
 
     y = model.forward(x.requires_grad_())
     _ = torch.mean(y).backward()
-    assert x._grad.shape == x.shape
+    assert x.grad.shape == x.shape

@@ -39,4 +39,4 @@ def test_s4_base_block_backward(hippo, method):
     model = S4BaseBlock(input_dim=5, hid_dim=10, method=method, hippo=hippo)
     y = model.forward(x.requires_grad_())
     _ = torch.mean(y).backward()
-    assert x._grad.shape == x.shape
+    assert x.grad.shape == x.shape

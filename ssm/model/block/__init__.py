@@ -1,5 +1,5 @@
 """
-Model block module.
+Module for the definition of the models' blocks.
 """
 
 __all__ = ["S4BaseBlock", "S4DBlock", "S4LowRankBlock", "S6Block", "MambaBlock"]

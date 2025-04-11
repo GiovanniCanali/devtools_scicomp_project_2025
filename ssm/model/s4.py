@@ -1,5 +1,5 @@
 import torch
-from .block import S4BaseBlock, S4LowRankBlock, S4DBlock, S6Block
+from .block import S4BaseBlock, S4LowRankBlock, S4DBlock
 
 
 class S4(torch.nn.Module):
