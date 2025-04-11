@@ -94,7 +94,7 @@ class MambaBlock(torch.nn.Module):
         x = self.conv1d(x.transpose(1, 2))[:, :, : x.shape[1]].transpose(1, 2)
         x = self.silu(x)
         x = self.ssm(x)
-        x = x + x_res
+        x = x * x_res
 
         if self.norm is not None:
             x = self.norm(x)
