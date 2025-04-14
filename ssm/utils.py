@@ -27,51 +27,85 @@ def compute_hippo(N):
     return -A
 
 
-def compute_S4DInv(N):
+def compute_S4DInv(N, real_random=False, imag_random=False):
     """
     Construct the S4D-Inv matrix A.
 
     :param int N: The size of the matrix.
+    :param bool real_random: If `True`, the real part of the A matrix is
+        initialized at random between 0 and 1. Default is `False`.
+    :param bool imag_random: If `True`, the imaginary part of the A matrix
+        is initialized at random between 0 and 1. Default is `False`.
     :return: The computed matrix A.
     :rtype: torch.Tensor
     """
-    n = torch.arange(N, dtype=torch.float32)
-    return -0.5 + 1j * (N / torch.pi) * (N / (2 * n + 1) - 1)
+    if real_random:
+        real_part = -torch.rand(N, dtype=torch.float32)
+    else:
+        real_part = -torch.ones(N, dtype=torch.float32) * 1 / 2
+    if imag_random:
+        imag_part = torch.rand(N, dtype=torch.float32)
+    else:
+        imag_part = torch.arange(N, dtype=torch.float32)
+    return real_part + 1j * (N / torch.pi) * (N / (2 * imag_part + 1) - 1)
 
 
-def compute_S4DLin(N):
+def compute_S4DLin(N, real_random=False, imag_random=False):
     """
     Construct the S4D-Lin matrix A.
 
     :param int N: The size of the matrix.
+    :param bool real_random: If `True`, the real part of the A matrix is
+        initialized at random between 0 and 1. Default is `False`.
+    :param bool imag_random: If `True`, the imaginary part of the A matrix
+        is initialized at random between 0 and 1. Default is `False`.
     :return: The computed matrix A.
     :rtype: torch.Tensor
     """
-    n = torch.arange(N, dtype=torch.float32)
-    return -0.5 + 1j * (n * torch.pi)
+    if real_random:
+        real_part = -torch.rand(N, dtype=torch.float32)
+    else:
+        real_part = -torch.ones(N, dtype=torch.float32) * 1 / 2
+    if imag_random:
+        imag_part = torch.rand(N, dtype=torch.float32)
+    else:
+        imag_part = torch.arange(N, dtype=torch.float32)
+    return real_part + 1j * (imag_part * torch.pi)
 
 
-def compute_S4DQuad(N):
+def compute_S4DQuad(N, real_random=False):
     """
     Construct the S4D-Quad matrix A.
 
     :param int N: The size of the matrix.
+    :param bool real_random: If `True`, the real part of the A matrix is
+        initialized at random between 0 and 1. Default is `False`.
     :return: The computed matrix A.
     :rtype: torch.Tensor
     """
-    n = torch.arange(N, dtype=torch.float32)
-    return 1 / torch.pi * (1 + 2 * n) ** 2
+    if real_random:
+        real_part = torch.rand(N, dtype=torch.float32)
+    else:
+        real_part = torch.arange(N, dtype=torch.float32)
+    return 1 / torch.pi * (1 + 2 * real_part) ** 2
 
 
-def compute_S4DReal(N):
+def compute_S4DReal(N, real_random=False):
     """
     Construct the S4D-Real matrix A.
 
     :param int N: The size of the matrix.
+    :param bool real_random: If `True`, the real part of the A matrix is
+        initialized at random between 0 and 1. Default is `False`.
     :return: The computed matrix A.
     :rtype: torch.Tensor
     """
-    return -(torch.rand(N) + 1)
+    if real_random:
+        real_part = torch.rand(N, dtype=torch.float32)
+    else:
+        real_part = torch.arange(N, dtype=torch.float32)
+
+    return -(real_part + 1)
 
 
 def compute_dplr(A):

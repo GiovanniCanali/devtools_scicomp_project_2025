@@ -47,6 +47,8 @@ class S4DBlock(S4BlockInterface):
         method,
         dt=0.1,
         initialization="S4D-Inv",
+        real_random=False,
+        imag_random=False,
         discretization="bilinear",
         **kwargs,
     ):
@@ -59,14 +61,23 @@ class S4DBlock(S4BlockInterface):
             are: recurrent, convolutional.
         :param float dt: The time step for discretization. Default is `0.1`.
         :param str initialization: The method for initializing the A matrix.
-            Options are: S4D-Inv, S4D-Lin, S4D-Quad, S4D-Real, real, complex.
+            Options are: S4D-Inv, S4D-Lin, S4D-Quad, S4D-Real.
             Default is `"S4D-Inv"`.
+        :param bool real_random: If `True`, the real part of the A matrix is
+            initialized at random between 0 and 1. Default is `False`.
+        :param bool imag_random: If `True`, the imaginary part of the A matrix
+            is initialized at random between 0 and 1. Default is `False`.
         :param str discretization: The method for discretizing the dynamics.
             Options are: bilinear, zoh. Default is `"bilinear"`.
         :param dict kwargs: Additional arguments for the class constructor.
         """
         # Initialize matrices A, B, and C
-        A = self.initialize_A(hid_dim, init_method=initialization)
+        A = self.initialize_A(
+            hid_dim,
+            init_method=initialization,
+            real_random=real_random,
+            imag_random=imag_random,
+        )
         A = A.unsqueeze(0).repeat(input_dim, 1)
         B = torch.rand(input_dim, hid_dim, dtype=A.dtype)
         C = torch.rand(input_dim, hid_dim, dtype=A.dtype)
@@ -159,34 +170,38 @@ class S4DBlock(S4BlockInterface):
         return h
 
     @staticmethod
-    def initialize_A(hid_dim, init_method):
+    def initialize_A(
+        hid_dim, init_method, real_random=False, imag_random=False
+    ):
         """
         Initialization of the A matrix.
 
         :param int hid_dim: The hidden state dimension.
         :param str init_method: The method for initializing the A matrix.
-            Options are: S4D-Inv, S4D-Lin, S4D-Quad, S4D-Real, real, complex.
+            Options are: S4D-Inv, S4D-Lin, S4D-Quad, S4D-Real.
+        :param bool real_random: If `True`, the real part of the A matrix is
+            initialized at random between 0 and 1. Default is `False`.
+        :param bool imag_random: If `True`, the imaginary part of the A matrix
+            is initialized at random between 0 and 1. Default is `False`.
         :return: The initialized A matrix.
         :rtype: torch.Tensor
         :raises ValueError: If an unknown initialization method is provided.
         """
+
         if init_method == "S4D-Inv":
-            return compute_S4DInv(hid_dim)
+            return compute_S4DInv(
+                hid_dim, real_random=real_random, imag_random=imag_random
+            )
 
         elif init_method == "S4D-Lin":
-            return compute_S4DLin(hid_dim)
+            return compute_S4DLin(
+                hid_dim, real_random=real_random, imag_random=imag_random
+            )
 
         elif init_method == "S4D-Quad":
-            return compute_S4DQuad(hid_dim)
+            return compute_S4DQuad(hid_dim, real_random=real_random)
 
         elif init_method == "S4D-Real":
-            return compute_S4DReal(hid_dim)
-
-        elif init_method == "real":
-            return torch.rand(hid_dim)
-
-        elif init_method == "complex":
-            return torch.rand(hid_dim) + 1j * torch.rand(hid_dim)
-
+            return compute_S4DReal(hid_dim, real_random=real_random)
         else:
             raise ValueError(f"Unknown initialization method: {init_method}")
