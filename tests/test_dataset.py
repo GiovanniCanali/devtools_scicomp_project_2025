@@ -1,27 +1,49 @@
-from ssm.dataset import CopyDataset
+import pytest
+import torch
+from ssm import CopyDataset
 
 
 def test_constructor():
     CopyDataset(
-        sequence_len=10,
-        mem_tokens=5,
+        sequence_len=20,
+        batch_size=32,
         alphabet_size=10,
-        N=20,
-        selective=True,
+        mem_tokens=10,
+        marker=-1,
+        selective=False,
     )
 
 
-def test_getitem():
+@pytest.mark.parametrize("selective", [True, False])
+@pytest.mark.parametrize("mem_tokens", [5, 7])
+@pytest.mark.parametrize("sequence_len", [10, 20])
+def test_generate_data(selective, mem_tokens, sequence_len):
     dataset = CopyDataset(
-        sequence_len=10,
-        mem_tokens=5,
-        alphabet_size=10,
-        N=10,
-        selective=True,
+        sequence_len=sequence_len,
+        batch_size=32,
+        alphabet_size=5,
+        mem_tokens=mem_tokens,
+        marker=-1,
+        selective=selective,
     )
-    x, y = dataset[0]
-    assert x.shape == (15,)
-    assert y.shape == (15,)
-    x, y = dataset[:5]
-    assert x.shape == (5, 15)
-    assert y.shape == (5, 15)
+    data = dataset.generate_data()
+    assert data is not None
+    assert len(data) == 2
+    assert data[0].shape == (32, sequence_len + mem_tokens)
+    assert data[1].shape == (32, sequence_len + mem_tokens)
+    assert torch.isclose(
+        data[1][:, :sequence_len],
+        torch.ones((32, sequence_len), dtype=torch.int64) * -1,
+    ).all()
+    assert [
+        True if i > 0 and i < 4 else False for i in data[0].flatten()
+    ].count(True) == 32 * mem_tokens
+    assert (
+        not all(
+            [
+                True if i > 0 and i < 4 else False
+                for i in data[0][:, :mem_tokens].flatten()
+            ]
+        )
+        == selective
+    )

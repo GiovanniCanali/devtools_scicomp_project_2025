@@ -111,7 +111,7 @@ class S6Block(torch.nn.Module):
         """
         tmp = A * dt.unsqueeze(-1)
         A_bar = torch.exp(tmp)
-        delta_B = torch.einsum("bld, bln -> bldn", dt, B)
+        delta_B = torch.matmul(dt.unsqueeze(-1), B.unsqueeze(2))
         B_bar = (A_bar - 1) * delta_B / (tmp + 1e-6)
         return A_bar, B_bar
 

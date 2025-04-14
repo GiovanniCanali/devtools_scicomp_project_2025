@@ -77,9 +77,6 @@ class S4BlockInterface(torch.nn.Module, ABC):
             raise ValueError(f"Unknown method: {method}")
         self.method = method
 
-        # Initialize the identity matrix
-        self.I = torch.eye(hid_dim).unsqueeze(0).expand(input_dim, -1, -1)
-
         # Initialize matrices A, B, and C
         self.A, self.B, self.C = (
             torch.nn.Parameter(A),

@@ -173,3 +173,6 @@ cython_debug/
 
 # For mac 
 *.DS_Store  
+
+#Avoid loading of logs
+logs/*

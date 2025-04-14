@@ -1,3 +1,5 @@
-all = ["DataModule"]
+all = ["CopyDataset", "Trainer"]
 
-from .datamodule import DataModule
+from .dataset import CopyDataset
+from .trainer import Trainer
+from .cli import TrainingCLI

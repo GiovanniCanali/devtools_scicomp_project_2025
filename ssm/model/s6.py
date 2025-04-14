@@ -53,7 +53,7 @@ class S6(torch.nn.Module):
         :param dict kwargs: Additional keyword arguments used in the block.
         """
         super().__init__()
-
+        self.input_dim = input_dim
         # Initialize the layers
         layers = []
         for _ in range(n_layers):

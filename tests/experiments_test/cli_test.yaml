@@ -1,0 +1,31 @@
+model:
+  model: ssm.model.S4
+  block_type: "S4D"
+  method: "convolutional"
+  activation: torch.nn.SiLU
+  input_dim: 5
+  hid_dim: 16
+  model_dim: 16
+  output_dim: 10
+  n_layers: 2
+  initialization: "S4D-Inv"
+  random_real: True
+  random_imag: True
+  discretization: "bilinear"
+
+dataset:
+    sequence_len: 50
+    batch_size: 16
+    alphabet_size: 10
+    mem_tokens: 10
+    marker: -1
+    selective: False
+
+trainer:
+    steps: 15
+    test_steps: 10
+    logging_steps: 5
+    logging_dir: "tests/logs/testing_logs"
+    device: "cpu"
+
+  

@@ -69,6 +69,10 @@ class S4BaseBlock(S4BlockInterface):
             method=method,
         )
 
+        self.register_buffer(
+            "I", torch.eye(hid_dim).unsqueeze(0).expand(input_dim, -1, -1)
+        )
+
     def _compute_K(self, L):
         """
         Computation of the kernel K used in the convolutional method.

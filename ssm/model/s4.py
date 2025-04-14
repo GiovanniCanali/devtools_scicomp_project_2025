@@ -59,7 +59,7 @@ class S4(torch.nn.Module):
         :raises ValueError: If the specified `block_type` is not valid.
         """
         super().__init__()
-
+        self.input_dim = input_dim
         # Initialize parameters
         self.block_type = block_type
 

@@ -1,0 +1,25 @@
+model:
+  model: ssm.model.S6
+  block_type: "S6"
+  input_dim: 16
+  hid_dim: 64
+  model_dim: 64
+  output_dim: 16
+  n_layers: 2
+  activation: torch.nn.SiLU
+
+dataset:
+    sequence_len: 1024
+    batch_size: 32
+    alphabet_size: 16
+    mem_tokens: 16
+    marker: -1
+    selective: True
+
+trainer:
+    steps: 100000
+    test_steps: 10
+    logging_steps: 10
+    logging_dir: "logs/s6_copy"
+
+  
