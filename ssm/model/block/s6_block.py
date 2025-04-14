@@ -69,6 +69,7 @@ class S6Block(torch.nn.Module):
         input_dim,
         hid_dim,
         dt=0.1,
+        real_random=False,
         **kwargs,
     ):
         """
@@ -77,6 +78,8 @@ class S6Block(torch.nn.Module):
         :param int input_dim: The input dimension.
         :param int hid_dim: The hidden dimension.
         :param float dt: The time step for discretization. Default is `0.1`.
+        :param bool real_random: If `True`, the real part of the A matrix is
+            initialized at random between 0 and 1. Default is `False`.
         :param dict kwargs: Additional keyword arguments.
         """
         super().__init__()
@@ -87,8 +90,8 @@ class S6Block(torch.nn.Module):
         self.dt = dt
 
         # Initialize the matrix A
-        A = compute_S4DReal(hid_dim).unsqueeze(0).repeat(input_dim, 1)
-        self.A = torch.nn.Parameter(A)
+        A = compute_S4DReal(hid_dim, real_random=real_random).unsqueeze(0)
+        self.A = torch.nn.Parameter(A.repeat(input_dim, 1))
 
         # Initialize the networks to compute matrices B and C
         self.linear_b = torch.nn.Linear(input_dim, hid_dim)

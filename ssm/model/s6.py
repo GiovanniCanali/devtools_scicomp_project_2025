@@ -35,6 +35,7 @@ class S6(torch.nn.Module):
         output_dim,
         n_layers=2,
         activation=torch.nn.ReLU,
+        real_random=False,
         **kwargs,
     ):
         """
@@ -46,6 +47,9 @@ class S6(torch.nn.Module):
         :param int n_layers: Number of S6 blocks. Default is 2.
         :param torch.nn.Module activation: The activation function.
             Default is `torch.nn.ReLU`.
+        :param bool real_random: If `True`, the real part of the A matrix of the
+            diagonal block is initialized at random between 0 and 1.
+            Default is `False`.
         :param dict kwargs: Additional keyword arguments used in the block.
         """
         super().__init__()
@@ -54,7 +58,12 @@ class S6(torch.nn.Module):
         layers = []
         for _ in range(n_layers):
             layers.append(
-                S6Block(input_dim=input_dim, hid_dim=hid_dim, **kwargs)
+                S6Block(
+                    input_dim=input_dim,
+                    hid_dim=hid_dim,
+                    real_random=real_random,
+                    **kwargs,
+                )
             )
             layers.append(activation())
             layers.append(torch.nn.Linear(input_dim, input_dim))
