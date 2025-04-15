@@ -109,7 +109,7 @@ class TrainingCLI:
             default=False,
             help="Test the model",
         )
-        return parser.parse_args()
+        return parser.parse_known_args()
 
     def fit(self):
         """

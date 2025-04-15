@@ -2,7 +2,8 @@ import pytest
 import torch
 from ssm.model import H3
 
-x = torch.randn(15, 10, 5)
+x = torch.randn(20, 25, 5)
+hid_dim = 10
 
 
 @pytest.mark.parametrize("method", ["convolutional", "recurrent"])
@@ -15,8 +16,8 @@ def test_h3_constructor(
 ):
 
     model = H3(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         heads=heads,
         dt=0.1,
@@ -36,8 +37,8 @@ def test_h3_constructor(
 def test_h3_forward(method, heads, discretisation, normalization, init_method):
 
     model = H3(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         heads=heads,
         dt=0.1,
@@ -49,7 +50,7 @@ def test_h3_forward(method, heads, discretisation, normalization, init_method):
     )
 
     y = model(x)
-    assert y.shape == (15, 10, 5)
+    assert y.shape == x.shape
 
 
 @pytest.mark.parametrize("method", ["convolutional", "recurrent"])
@@ -60,8 +61,8 @@ def test_h3_forward(method, heads, discretisation, normalization, init_method):
 def test_h3_backward(method, heads, discretisation, normalization, init_method):
 
     model = H3(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         heads=heads,
         dt=0.1,

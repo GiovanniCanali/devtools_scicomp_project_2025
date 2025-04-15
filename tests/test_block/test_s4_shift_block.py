@@ -2,14 +2,16 @@ import pytest
 import torch
 from ssm.model.block import S4ShiftBlock
 
-x = torch.rand(1000, 25, 5)
+x = torch.rand(20, 25, 5)
+hid_dim = 10
 
 
 @pytest.mark.parametrize("method", ["recurrent", "convolutional"])
 def test_s4_shift_block_constructor(method):
+
     model = S4ShiftBlock(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
     )
 
@@ -17,26 +19,30 @@ def test_s4_shift_block_constructor(method):
 
     # Invalid method
     with pytest.raises(ValueError):
-        model = S4ShiftBlock(input_dim=5, hid_dim=10, method="invalid_method")
+        model = S4ShiftBlock(
+            input_dim=x.shape[2], hid_dim=hid_dim, method="invalid_method"
+        )
 
 
 @pytest.mark.parametrize("method", ["recurrent", "convolutional"])
 def test_s4_shift_block_forward(method):
+
     model = S4ShiftBlock(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
     )
 
     y = model.forward(x)
-    assert y.shape == (1000, 25, 5)
+    assert y.shape == x.shape
 
 
 @pytest.mark.parametrize("method", ["recurrent", "convolutional"])
 def test_s4_shift_block_backward(method):
+
     model = S4ShiftBlock(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
     )
 

@@ -2,7 +2,8 @@ import pytest
 import torch
 from ssm.model.block import H3Block
 
-x = torch.rand(1000, 25, 5)
+x = torch.rand(20, 25, 5)
+hid_dim = 10
 
 
 @pytest.mark.parametrize("method", ["recurrent", "convolutional"])
@@ -10,9 +11,10 @@ x = torch.rand(1000, 25, 5)
 @pytest.mark.parametrize("discretisation", ["bilinear", "zoh"])
 @pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
 def test_h3_block_constructor(method, heads, init_method, discretisation):
+
     model = H3Block(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         heads=heads,
         initialization=init_method,
@@ -22,8 +24,8 @@ def test_h3_block_constructor(method, heads, init_method, discretisation):
     # Invalid method
     with pytest.raises(ValueError):
         H3Block(
-            input_dim=5,
-            hid_dim=10,
+            input_dim=x.shape[2],
+            hid_dim=hid_dim,
             method="invalid_method",
             heads=heads,
             initialization=init_method,
@@ -33,8 +35,8 @@ def test_h3_block_constructor(method, heads, init_method, discretisation):
     # Invalid heads
     with pytest.raises(ValueError):
         H3Block(
-            input_dim=5,
-            hid_dim=10,
+            input_dim=x.shape[2],
+            hid_dim=hid_dim,
             method=method,
             heads=3,
             initialization=init_method,
@@ -47,9 +49,10 @@ def test_h3_block_constructor(method, heads, init_method, discretisation):
 @pytest.mark.parametrize("discretisation", ["bilinear", "zoh"])
 @pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
 def test_h3_block_forward(method, heads, init_method, discretisation):
+
     model = H3Block(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         heads=heads,
         initialization=init_method,
@@ -57,7 +60,7 @@ def test_h3_block_forward(method, heads, init_method, discretisation):
     )
 
     y = model.forward(x)
-    assert y.shape == (1000, 25, 5)
+    assert y.shape == x.shape
 
 
 @pytest.mark.parametrize("method", ["recurrent", "convolutional"])
@@ -65,9 +68,10 @@ def test_h3_block_forward(method, heads, init_method, discretisation):
 @pytest.mark.parametrize("discretisation", ["bilinear", "zoh"])
 @pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
 def test_h3_block_backward(method, heads, init_method, discretisation):
+
     model = H3Block(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         heads=heads,
         initialization=init_method,

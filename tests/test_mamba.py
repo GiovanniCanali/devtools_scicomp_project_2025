@@ -2,8 +2,7 @@ import pytest
 import torch
 from ssm.model import Mamba
 
-
-x = torch.randn(15, 10, 5)
+x = torch.randn(20, 25, 5)
 
 
 @pytest.mark.parametrize("n_layers", [1, 4])
@@ -18,7 +17,7 @@ def test_mamba_constructor(n_layers, ssm_type, normalization, method):
 
     model = Mamba(
         n_layers=n_layers,
-        input_dim=5,
+        input_dim=x.shape[2],
         expansion_factor=2,
         kernel_size=3,
         normalization=normalization,
@@ -41,7 +40,7 @@ def test_mamba_forward(normalization, ssm_type, method):
 
     model = Mamba(
         n_layers=1,
-        input_dim=5,
+        input_dim=x.shape[2],
         expansion_factor=2,
         kernel_size=3,
         ssm_type=ssm_type,
@@ -50,7 +49,7 @@ def test_mamba_forward(normalization, ssm_type, method):
     )
 
     y = model(x)
-    assert y.shape == (15, 10, 5)
+    assert y.shape == x.shape
 
 
 @pytest.mark.parametrize("normalization", [True, False])
@@ -64,7 +63,7 @@ def test_mamba_backward(ssm_type, normalization, method):
 
     model = Mamba(
         n_layers=1,
-        input_dim=5,
+        input_dim=x.shape[2],
         expansion_factor=2,
         kernel_size=3,
         ssm_type=ssm_type,

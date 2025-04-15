@@ -2,7 +2,8 @@ import pytest
 import torch
 from ssm.model.block import S4DBlock
 
-x = torch.rand(1000, 25, 5)
+x = torch.rand(20, 25, 5)
+hid_dim = 10
 
 
 @pytest.mark.parametrize("method", ["recurrent", "convolutional"])
@@ -13,9 +14,10 @@ x = torch.rand(1000, 25, 5)
 def test_s4_diagonal_block_constructor(
     method, init_method, discretization, imag_random, real_random
 ):
+
     model = S4DBlock(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         initialization=init_method,
         discretization=discretization,
@@ -23,28 +25,36 @@ def test_s4_diagonal_block_constructor(
         imag_random=imag_random,
     )
 
-    assert model.A.shape == (5, 10)
-    assert model.B.shape == (5, 10)
-    assert model.C.shape == (5, 10)
+    assert model.A.shape == (x.shape[2], hid_dim)
+    assert model.B.shape == (x.shape[2], hid_dim)
+    assert model.C.shape == (x.shape[2], hid_dim)
 
     A_bar, B_bar = model._discretize()
-    assert A_bar.shape == (5, 10)
-    assert B_bar.shape == (5, 10)
+    assert A_bar.shape == (x.shape[2], hid_dim)
+    assert B_bar.shape == (x.shape[2], hid_dim)
 
     # Invalid method
     with pytest.raises(ValueError):
-        model = S4DBlock(input_dim=5, hid_dim=10, method="invalid_method")
+        model = S4DBlock(
+            input_dim=x.shape[2], hid_dim=hid_dim, method="invalid_method"
+        )
 
     # Invalid initialization
     with pytest.raises(ValueError):
         model = S4DBlock(
-            input_dim=5, hid_dim=10, method=method, initialization="inv_init"
+            input_dim=x.shape[2],
+            hid_dim=hid_dim,
+            method=method,
+            initialization="inv_init",
         )
 
     # Invalid discretization
     with pytest.raises(ValueError):
         model = S4DBlock(
-            input_dim=5, hid_dim=10, method=method, discretization="inv_discr"
+            input_dim=x.shape[2],
+            hid_dim=hid_dim,
+            method=method,
+            discretization="inv_discr",
         )
 
 
@@ -56,17 +66,19 @@ def test_s4_diagonal_block_constructor(
 def test_s4_diagonal_block_forward(
     method, init_method, discretization, real_random, imag_random
 ):
+
     model = S4DBlock(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         initialization=init_method,
         discretization=discretization,
         real_random=real_random,
         imag_random=imag_random,
     )
+
     y = model.forward(x)
-    assert y.shape == (1000, 25, 5)
+    assert y.shape == x.shape
 
 
 @pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
@@ -77,15 +89,17 @@ def test_s4_diagonal_block_forward(
 def test_s4_diagonal_block_backward(
     method, init_method, discretization, real_random, imag_random
 ):
+
     model = S4DBlock(
-        input_dim=5,
-        hid_dim=10,
+        input_dim=x.shape[2],
+        hid_dim=hid_dim,
         method=method,
         initialization=init_method,
         discretization=discretization,
         real_random=real_random,
         imag_random=imag_random,
     )
+
     y = model.forward(x.requires_grad_())
     _ = torch.mean(y).backward()
     assert x.grad.shape == x.shape
