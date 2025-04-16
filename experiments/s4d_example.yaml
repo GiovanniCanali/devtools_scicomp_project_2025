@@ -11,8 +11,7 @@ model:
   initialization: "S4D-Real"
   discretization: "bilinear"
   random_real: True
-  random_imag: True
-  discretization: "bilinear"
+  dt: .001
 
 trainer:
     logging_dir: "logs/s4d_copy"

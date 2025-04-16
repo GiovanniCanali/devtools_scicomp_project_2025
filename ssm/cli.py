@@ -26,7 +26,7 @@ class TrainingCLI:
         :param str config_file: Path to the configuration file.
 
         """
-        self.args = self.argparsing()
+        self.args = self.argparsing()[0]
         if config_file is None:
             config_file = self.args.config_file
         config = self.load_config(config_file)

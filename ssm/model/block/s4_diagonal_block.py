@@ -79,8 +79,10 @@ class S4DBlock(S4BlockInterface):
             imag_random=imag_random,
         )
         A = A.unsqueeze(0).repeat(input_dim, 1)
-        B = torch.rand(input_dim, hid_dim, dtype=A.dtype)
-        C = torch.rand(input_dim, hid_dim, dtype=A.dtype)
+        B = torch.rand(input_dim, hid_dim)
+        C = torch.rand(input_dim, hid_dim)
+
+        dt = torch.tensor(dt, dtype=torch.float32)
 
         super().__init__(
             input_dim=input_dim,
@@ -105,10 +107,10 @@ class S4DBlock(S4BlockInterface):
         Discretization of the continuous-time dynamics to obtain the matrices
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
-        tmp = 1 + self.A * self.dt / 2
-        tmp2 = 1 - self.A * self.dt / 2
+        tmp = 1 + self.A * self.dt.unsqueeze(-1) / 2
+        tmp2 = 1 - self.A * self.dt.unsqueeze(-1) / 2
         A_bar = 1 / tmp2 * tmp
-        B_bar = 1 / tmp2 * self.B * self.dt
+        B_bar = 1 / tmp2 * self.B * self.dt.unsqueeze(-1)
         return A_bar, B_bar
 
     def _discretize_zoh(self):
@@ -116,9 +118,9 @@ class S4DBlock(S4BlockInterface):
         Discretization of the continuous-time dynamics to obtain the matrices
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
-        tmp = self.A * self.dt
+        tmp = self.A * self.dt.unsqueeze(-1)
         A_bar = torch.exp(tmp)
-        B_bar = (A_bar - 1) * self.B * self.dt / (tmp + 1e-6)
+        B_bar = (A_bar - 1) * self.B * self.dt.unsqueeze(-1) / (tmp + 1e-6)
         return A_bar, B_bar
 
     @staticmethod

@@ -89,6 +89,7 @@ class S4(torch.nn.Module):
             )
             layers.append(activation())
             layers.append(torch.nn.Linear(input_dim, input_dim))
+            layers.append(torch.nn.LayerNorm(input_dim))
         self.layers = torch.nn.Sequential(*layers)
 
         # Initialize the decoder to match the output dimension

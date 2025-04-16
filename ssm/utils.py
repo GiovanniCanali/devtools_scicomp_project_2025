@@ -103,8 +103,7 @@ def compute_S4DReal(N, real_random=False):
     if real_random:
         real_part = torch.rand(N, dtype=torch.float32)
     else:
-        real_part = torch.arange(N, dtype=torch.float32)
-
+        real_part = torch.arange(1, N + 1, dtype=torch.float32)
     return -(real_part + 1)
 
 

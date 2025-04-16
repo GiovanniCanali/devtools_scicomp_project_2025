@@ -1,9 +1,7 @@
 model:
   model: ssm.model.S6
-  block_type: "S6"
   input_dim: 16
-  hid_dim: 64
-  model_dim: 64
+  hid_dim: 128
   output_dim: 16
   n_layers: 2
   activation: torch.nn.SiLU

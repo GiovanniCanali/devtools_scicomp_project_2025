@@ -34,12 +34,10 @@ def test_generate_data(selective, mem_tokens, sequence_len):
     assert len(data) == 2
 
     input_, target = data
-    expected_shape = (32, sequence_len + mem_tokens)
-    assert input_.shape == expected_shape
-    assert target.shape == expected_shape
-
-    expected_target = torch.ones((32, sequence_len), dtype=torch.int64) * -1
-    assert torch.allclose(target[:, :sequence_len], expected_target)
+    expected_input_shape = (32, sequence_len + mem_tokens * 2)
+    expected_target_shape = (32, mem_tokens)
+    assert input_.shape == expected_input_shape
+    assert target.shape == expected_target_shape
 
     mask = (input_ > 0) & (input_ < 4)
     assert mask.sum() == 32 * mem_tokens

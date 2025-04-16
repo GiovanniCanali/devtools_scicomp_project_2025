@@ -54,10 +54,7 @@ class MambaBlock(torch.nn.Module):
         kwargs["hid_dim"] = expansion_factor * input_dim
 
         self.input_net = torch.nn.Linear(
-            input_dim, expansion_factor * input_dim
-        )
-        self.input_net_res = torch.nn.Linear(
-            input_dim, expansion_factor * input_dim
+            input_dim, 2 * expansion_factor * input_dim
         )
         self.output_net = torch.nn.Linear(
             expansion_factor * input_dim, input_dim
@@ -84,7 +81,8 @@ class MambaBlock(torch.nn.Module):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        x, x_res = self.input_net(x), self.silu(self.input_net_res(x))
+        x, x_res = torch.chunk(self.input_net(x), 2, dim=-1)
+        x_res = self.silu(x_res)
         x = self.conv1d(x.transpose(1, 2))[:, :, : x.shape[1]].transpose(1, 2)
         x = self.silu(x)
         x = self.ssm(x)

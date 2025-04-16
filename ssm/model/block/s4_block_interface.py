@@ -70,7 +70,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         # Initialize parameters
         self.input_dim = input_dim
         self.hid_dim = hid_dim
-        self.dt = dt
+        self.register_buffer("dt", dt)
 
         # Check method
         if method not in ["recurrent", "convolutional"]:
@@ -78,11 +78,11 @@ class S4BlockInterface(torch.nn.Module, ABC):
         self.method = method
 
         # Initialize matrices A, B, and C
-        self.A, self.B, self.C = (
-            torch.nn.Parameter(A),
+        self.B, self.C = (
             torch.nn.Parameter(B),
             torch.nn.Parameter(C),
         )
+        self.register_buffer("A", A)
 
     def forward_recurrent(self, x):
         """

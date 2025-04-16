@@ -46,7 +46,7 @@ class Trainer:
         """
         self.dataset = iter(dataset)
         n_classes = dataset.alphabet_size
-        self.model = EmbeddingBlock(model, n_classes)
+        self.model = EmbeddingBlock(model, n_classes, dataset.mem_tokens)
         self.steps = steps
         self.accumulation_steps = accumulation_steps
         self.test_steps = test_steps
@@ -55,11 +55,9 @@ class Trainer:
         self.optimizer = optimizer_class(
             self.model.parameters(), **optimizer_params
         )
-        self.loss = torch.nn.CrossEntropyLoss(ignore_index=-1)
+        self.loss = torch.nn.CrossEntropyLoss()
         self.enable_progress_bar = enable_progress_bar
-        self.accuracy = Accuracy(
-            task="multiclass", num_classes=n_classes, ignore_index=-1
-        )
+        self.accuracy = Accuracy(task="multiclass", num_classes=n_classes)
         if tensorboard_logger and logging_steps > 0:
             from torch.utils.tensorboard import SummaryWriter
 
@@ -74,36 +72,51 @@ class Trainer:
             os.makedirs(logging_dir)
             self.writer = SummaryWriter(log_dir=logging_dir)
             self.logging = self.tensorboard_wrapper(self.logging)
+        self.mem_tokens = dataset.mem_tokens
 
     def fit(self):
         """
-        Train the model
+        Train the model using gradient accumulation.
         """
         self.move_to_device()
         self.model.train()
         pbar = tqdm(range(self.steps), disable=not self.enable_progress_bar)
+
+        accumulation_counter = 0
+        accumulated_loss = 0.0  # For logging purposes
+
         for i in pbar:
-            # Get a batch of data
+            # Get new sample
             x, y = next(self.dataset)
             x, y = x.to(self.device), y.to(self.device)
 
-            # Forward pass
-            output = self.model(x).permute(0, 2, 1)
+            # Forward pass and loss computation
+            loss, accuracy = self.compute_metrics(self.model(x), y)
 
-            # Compute loss
-            loss = self.loss(output, y) / self.accumulation_steps
-            accuracy = self.accuracy(output, y)
-
-            # Backward pass and optimization
-            self.optimizer.zero_grad()
+            loss = (
+                loss / self.accumulation_steps
+            )  # Scale the loss for accumulation
             loss.backward()
-            self.optimizer.step()
-            if i % self.accumulation_steps == 0:
+
+            # Accumulate loss and increment the counter
+            accumulated_loss += loss
+            accumulation_counter += 1
+
+            # Update the model parameters every accumulation_steps
+            if accumulation_counter % self.accumulation_steps == 0:
                 self.optimizer.step()
                 self.optimizer.zero_grad()
-
-            if i % self.logging_steps == 0:
-                self.logging(pbar, i, loss, accuracy)
+                # Log the metrics
+                if (
+                    accumulation_counter // self.accumulation_steps
+                ) % self.logging_steps == 0:
+                    self.logging(
+                        pbar,
+                        accumulation_counter // self.accumulation_steps,
+                        accumulated_loss,
+                        accuracy,
+                    )
+                accumulated_loss = 0.0
 
     def test(self):
         """
@@ -123,11 +136,9 @@ class Trainer:
                 x, y = x.to(self.device), y.to(self.device)
 
                 # Forward pass
-                output = self.model(x).permute(0, 2, 1)
-
-                # Compute loss
-                loss += self.loss(output, y)
-                accuracy += self.accuracy(output, y)
+                loss_, accuracy_ = self.compute_metrics(self.model(x), y)
+                loss += loss_.item()
+                accuracy += accuracy_.item()
         print(f"Test Loss: {loss / self.test_steps}")
         print(f"Test Accuracy: {accuracy / self.test_steps}")
 
@@ -138,6 +149,19 @@ class Trainer:
             "test/accuracy", accuracy / self.test_steps, self.test_steps
         )
         self.writer.close()
+
+    def compute_metrics(self, output, y):
+        """
+        Compute the loss and accuracy metrics.
+        :param torch.Tensor output: The model output.
+        :param torch.Tensor y: The ground truth labels.
+        :return: The loss and accuracy values.
+        :rtype: tuple
+        """
+        output = output.permute(0, 2, 1)[..., -self.mem_tokens :]
+        loss = self.loss(output, y)
+        accuracy = self.accuracy(output, y)
+        return loss, accuracy
 
     def move_to_device(self):
         """

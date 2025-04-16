@@ -14,8 +14,8 @@ def test_dataset():
     dataset = cli.trainer.dataset
     x, y = next(dataset)
 
-    assert x.shape == (16, 60)
-    assert y.shape == (16, 60)
+    assert x.shape == (16, 70)
+    assert y.shape == (16, 10)
     assert not all(
         [True if i > 0 and i < 4 else False for i in x[:, :10].flatten()]
     )

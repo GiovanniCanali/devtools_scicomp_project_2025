@@ -1,3 +1,5 @@
+import torch
 from ssm.cli import TrainingCLI
 
-TrainingCLI()
+cli = TrainingCLI()
+cli()

@@ -62,7 +62,7 @@ class S4BaseBlock(S4BlockInterface):
         super().__init__(
             input_dim=input_dim,
             hid_dim=hid_dim,
-            dt=dt,
+            dt=torch.Tensor([dt]),
             A=A,
             B=B,
             C=C,

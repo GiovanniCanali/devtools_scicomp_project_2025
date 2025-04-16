@@ -46,7 +46,7 @@ class S4LowRankBlock(S4BlockInterface):
         super().__init__(
             input_dim=input_dim,
             hid_dim=hid_dim,
-            dt=dt,
+            dt=torch.tensor(dt),
             A=torch.empty((1)),
             B=B,
             C=C,
@@ -59,9 +59,6 @@ class S4LowRankBlock(S4BlockInterface):
                 "S4LowRankBlock only supports convolutional method,"
                 f" got {self.method}"
             )
-
-        # Delete dt for GPU memory management
-        del self.dt
 
         # Initialize low-rank decomposition matrices
         if hippo:
@@ -82,7 +79,6 @@ class S4LowRankBlock(S4BlockInterface):
 
         # Initialize parameters
         self.register_buffer("omega", None)
-        self.register_buffer("dt", torch.tensor([dt]))
 
     def forward_convolutional(self, x):
         """

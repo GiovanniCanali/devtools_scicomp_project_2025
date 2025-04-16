@@ -61,20 +61,59 @@ class CopyDataset(IterableDataset):
         :return: Tuple of input and output tensors.
         :rtype: tuple(torch.Tensor, torch.Tensor)
         """
+
         N = self.batch_size
         tokens = torch.randint(
-            low=1, high=self.alphabet_size - 1, size=(N, self.mem_tokens)
+            low=1,
+            high=self.alphabet_size - 1,
+            size=(
+                N,
+                self.mem_tokens,
+            ),
         )
-        padding = torch.zeros(
-            (N, self.sequence_len - self.mem_tokens), dtype=torch.long
-        )
-        x = torch.cat([tokens, padding], dim=-1)
         if self.selective:
-            x = vmap(self.make_selective, randomness="different")(x)
-        mask_x = torch.ones((N, self.mem_tokens)) * self.alphabet_size - 1
-        x = torch.cat([x, mask_x], dim=-1).to(torch.int64)
-        mask_y = torch.ones((N, self.sequence_len)) * self.marker
-        y = torch.cat([mask_y, tokens], dim=-1).to(torch.int64)
+            inds = torch.stack(
+                [
+                    torch.randperm(self.sequence_len + self.mem_tokens)[
+                        : self.mem_tokens
+                    ]
+                    for _ in range(N)
+                ],
+                0,
+            )
+            inds = inds.reshape(
+                (
+                    N,
+                    self.mem_tokens,
+                )
+            )
+            inds, _ = inds.sort()
+        else:
+            inds = torch.arange(self.mem_tokens).repeat(
+                (
+                    N,
+                    1,
+                )
+            )
+        zeros_x = torch.zeros(
+            (
+                N,
+                self.mem_tokens + self.sequence_len,
+            ),
+            dtype=torch.long,
+        )
+        zeros_x.scatter_(-1, inds, tokens)
+        markers = (self.alphabet_size - 1) * torch.ones(
+            (
+                N,
+                self.mem_tokens,
+            ),
+            dtype=torch.long,
+        )
+
+        x = torch.cat([zeros_x, markers], dim=-1)
+        y = torch.cat([tokens], dim=-1)
+
         return x, y
 
     def __iter__(self):
