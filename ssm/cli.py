@@ -1,6 +1,7 @@
 import yaml
 import importlib
 import argparse
+from copy import deepcopy
 from .dataset import CopyDataset
 from .trainer import Trainer
 
@@ -29,11 +30,12 @@ class TrainingCLI:
         if config_file is None:
             config_file = self.args.config_file
         config = self.load_config(config_file)
-        model = self.init_model(config["model"])
-        dataset = CopyDataset(**config["dataset"])
-        trainer_config = config["trainer"]
+        model = self.init_model(deepcopy(config["model"]))
+        dataset = deepcopy(CopyDataset(**deepcopy(config["dataset"])))
+        trainer_config = deepcopy(config["trainer"])
         trainer_config["dataset"] = dataset
         self.trainer = self.init_trainer(trainer_config, model, dataset)
+        self.write_on_tensorboard(config)
 
     def load_config(self, config_file):
         """
@@ -42,8 +44,32 @@ class TrainingCLI:
         :return: Configuration dictionary.
         :rtype: dict
         """
+        import os
+
+        path = "/".join(config_file.split("/")[:-1]) + "/common.yaml"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                common_config = yaml.safe_load(f)
+        else:
+            common_config = {}
         with open(config_file, "r") as f:
             config = yaml.safe_load(f)
+
+        # Combine common config with specific config
+        if common_config:
+            # Iterate over common config and add to specific config
+            for k, v in common_config.items():
+                # If section is not in specific config, add it
+                if k not in config:
+                    config[k] = v
+                    continue
+                # If section is in both, merge them
+                if isinstance(v, dict):
+                    # If section is a dict, merge it
+                    for kk, vv in v.items():
+                        # If key is not in specific config, add it
+                        if kk not in config[k]:
+                            config[k][kk] = vv
         return config
 
     @staticmethod
@@ -134,3 +160,13 @@ class TrainingCLI:
             self.fit()
         if self.args.test:
             self.test()
+
+    def write_on_tensorboard(self, config):
+        """
+        Write the configuration on TensorBoard.
+        :param dict config: Configuration dictionary.
+        """
+        if hasattr(self.trainer, "writer"):
+            config_str = yaml.dump(config)
+            self.trainer.writer.add_text("config", config_str, global_step=0)
+            self.trainer.writer.flush()

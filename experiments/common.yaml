@@ -1,0 +1,16 @@
+dataset:
+    sequence_len: 1001
+    batch_size: 64
+    alphabet_size: 16
+    mem_tokens: 16
+    marker: -1
+    selective: False
+
+trainer:
+    steps: 100000
+    test_steps: 10
+    logging_steps: 100
+    optimizer_class: torch.optim.AdamW
+    optimizer_params:
+        lr: 0.001
+    device: "cuda"
