@@ -58,6 +58,7 @@ class Trainer:
         self.loss = torch.nn.CrossEntropyLoss()
         self.enable_progress_bar = enable_progress_bar
         self.accuracy = Accuracy(task="multiclass", num_classes=n_classes)
+        self.writer = None
         if tensorboard_logger and logging_steps > 0:
             from torch.utils.tensorboard import SummaryWriter
 
@@ -73,6 +74,7 @@ class Trainer:
             self.writer = SummaryWriter(log_dir=logging_dir)
             self.logging = self.tensorboard_wrapper(self.logging)
         self.mem_tokens = dataset.mem_tokens
+        self.model_summary()
 
     def fit(self):
         """
@@ -250,3 +252,38 @@ class Trainer:
             self.writer.flush()
 
         return wrapped
+
+    def _count_parameters(self):
+        """
+        Count the number of trainable and non-trainable parameters in the model.
+        :return: The number of trainable parameters.
+        :rtype: int
+        """
+        trainable = sum(
+            p.numel() for p in self.model.parameters() if p.requires_grad
+        )
+        non_trainable = sum(
+            p.numel() for p in self.model.parameters() if not p.requires_grad
+        )
+        return {
+            "trainable": trainable,
+            "non_trainable": non_trainable,
+            "total": trainable + non_trainable,
+        }
+
+    def model_summary(self):
+        """
+        Print a summary of the model, including the number of parameters and
+        the architecture.
+        """
+        num_params = self._count_parameters()
+        print(f"Trainable parameters: {num_params['trainable']}")
+        print(f"Non-trainable parameters: {num_params['non_trainable']}")
+        if self.writer is not None:
+            self.writer.add_text(
+                "trainable_parameters", str(num_params["trainable"]), 0
+            )
+            self.writer.add_text(
+                "non_trainable_parameters", str(num_params["non_trainable"]), 0
+            )
+            self.writer.flush()
