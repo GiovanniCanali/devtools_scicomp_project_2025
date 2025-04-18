@@ -1,0 +1,15 @@
+model:
+  model: ssm.model.S4
+  block_type: "S4D"
+  method: "convolutional"
+  activation: torch.nn.GELU
+  initialization: "S4D-Inv"
+  discretization: "bilinear"
+  random_real: True
+  dt_min: 0.001
+  dt_max: 0.01
+  residual: True
+  layer_norm: True
+
+trainer:
+    logging_dir: "logs/s4d_inv"

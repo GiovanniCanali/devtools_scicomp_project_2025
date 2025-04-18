@@ -1,0 +1,12 @@
+model:
+  model: ssm.model.S6
+  activation: torch.nn.SiLU
+  residual: True
+  layer_norm: True
+  dt_min: 0.001
+  dt_max: 0.01
+
+trainer:
+    logging_dir: "logs/s6"
+
+  

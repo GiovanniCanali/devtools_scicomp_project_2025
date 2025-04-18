@@ -3,15 +3,13 @@ model:
   block_type: "S4D"
   method: "convolutional"
   activation: torch.nn.GELU
-  input_dim: 16
-  hid_dim: 64
-  model_dim: 64
-  output_dim: 16
-  n_layers: 2
   initialization: "S4D-Real"
   discretization: "bilinear"
   random_real: True
-  dt: .001
+  dt_min: 0.001
+  dt_max: 0.01
+  residual: True
+  layer_norm: True
 
 trainer:
-    logging_dir: "logs/s4d_copy"
+    logging_dir: "logs/s4d_real"

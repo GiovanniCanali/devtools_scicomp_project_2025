@@ -1,0 +1,15 @@
+model:
+  model: ssm.model.Mamba
+  dt_min: 0.001
+  dt_max: 0.01
+  expansion_factor: 2
+  kernel_size: 4
+  normalization: True
+  ssm_type: "S6"
+  dt_min: 0.001
+  dt_max: 0.01
+
+trainer:
+    logging_dir: "logs/mamba_s4d_inv"
+
+  
