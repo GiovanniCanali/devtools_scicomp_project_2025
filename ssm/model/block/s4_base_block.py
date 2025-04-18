@@ -1,6 +1,6 @@
 import torch
 from .s4_block_interface import S4BlockInterface
-from ...utils import compute_hippo
+from ...utils import compute_hippo, initialize_dt
 
 
 class S4BaseBlock(S4BlockInterface):
@@ -35,7 +35,8 @@ class S4BaseBlock(S4BlockInterface):
         input_dim,
         hid_dim,
         method,
-        dt=0.1,
+        dt_min=0.001,
+        dt_max=0.01,
         hippo=False,
         **kwargs,
     ):
@@ -46,7 +47,10 @@ class S4BaseBlock(S4BlockInterface):
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
-        :param float dt: The time step for discretization. Default is `0.1`.
+        :param float dt_min: The minimum time step for discretization.
+            Default is `0.001`.
+        :param float dt_max: The maximum time step for discretization.
+            Default is `0.01`.
         :param bool hippo: Whether to use the HIPPO matrix for initialization.
             Default is `False`.
         :param dict kwargs: Additional arguments for the class constructor.
@@ -59,10 +63,22 @@ class S4BaseBlock(S4BlockInterface):
         B = torch.rand(input_dim, hid_dim, 1)
         C = torch.rand(input_dim, 1, hid_dim)
 
+        # Initialize the time step dt
+        dt = (
+            initialize_dt(
+                input_dim=input_dim,
+                dt_min=dt_min,
+                dt_max=dt_max,
+                inverse_softplus=False,
+            )
+            .unsqueeze(-1)
+            .unsqueeze(-1)
+        )
+
         super().__init__(
             input_dim=input_dim,
             hid_dim=hid_dim,
-            dt=torch.Tensor([dt]),
+            dt=dt,
             A=A,
             B=B,
             C=C,

@@ -1,5 +1,6 @@
+import math
 import torch
-from ...utils import compute_S4DReal
+from ...utils import compute_S4DReal, initialize_dt
 
 
 class DeltaNetwork(torch.nn.Module):
@@ -11,22 +12,28 @@ class DeltaNetwork(torch.nn.Module):
     input dimension.
     """
 
-    def __init__(self, input_dim, dt):
+    def __init__(self, input_dim, dt_min, dt_max):
         """
         Initialization of the Delta Network.
 
         :param int input_dim: The input dimension.
-        :param float dt: The time step for discretization.
+        :param float dt_min: The minimum time step for discretization.
+        :param float dt_max: The maximum time step for discretization.
         """
         super().__init__()
-
-        # Initialize the parameters
-        self.dt = dt
         self.input_dim = input_dim
-
-        # Define the layers
+        self.linear = torch.nn.Linear(input_dim, 1, bias=False)
         self.activation = torch.nn.Softplus()
-        self.linear = torch.nn.Linear(input_dim, 1)
+
+        # Initialize the time step dt
+        self.dt = torch.nn.Parameter(
+            initialize_dt(
+                input_dim=input_dim,
+                dt_min=dt_min,
+                dt_max=dt_max,
+                inverse_softplus=True,
+            )
+        )
 
     def forward(self, x):
         """
@@ -36,8 +43,9 @@ class DeltaNetwork(torch.nn.Module):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        delta = self.activation(self.linear(x)) + self.dt
-        return delta.repeat(1, 1, self.input_dim)
+        x = self.linear(x)
+        x = x.expand(-1, -1, self.input_dim)
+        return self.activation(x + self.dt)
 
 
 class S6Block(torch.nn.Module):
@@ -68,7 +76,8 @@ class S6Block(torch.nn.Module):
         self,
         input_dim,
         hid_dim,
-        dt=0.1,
+        dt_min=0.001,
+        dt_max=0.01,
         real_random=False,
         **kwargs,
     ):
@@ -77,7 +86,10 @@ class S6Block(torch.nn.Module):
 
         :param int input_dim: The input dimension.
         :param int hid_dim: The hidden dimension.
-        :param float dt: The time step for discretization. Default is `0.1`.
+        :param float dt_min: The minimum time step for discretization.
+            Default is `0.001`.
+        :param float dt_max: The maximum time step for discretization.
+            Default is `0.01`.
         :param bool real_random: If `True`, the real part of the A matrix is
             initialized at random between 0 and 1. Default is `False`.
         :param dict kwargs: Additional keyword arguments.
@@ -87,7 +99,6 @@ class S6Block(torch.nn.Module):
         # Initialize parameters
         self.input_dim = input_dim
         self.hid_dim = hid_dim
-        self.dt = dt
 
         # Initialize the matrix A
         A = compute_S4DReal(hid_dim, real_random=real_random).unsqueeze(0)
@@ -96,7 +107,9 @@ class S6Block(torch.nn.Module):
         # Initialize the networks to compute matrices B and C
         self.linear_b = torch.nn.Linear(input_dim, hid_dim)
         self.linear_c = torch.nn.Linear(input_dim, hid_dim)
-        self.delta_net = DeltaNetwork(input_dim=input_dim, dt=dt)
+        self.delta_net = DeltaNetwork(
+            input_dim=input_dim, dt_min=dt_min, dt_max=dt_max
+        )
 
     def _discretize(self, A, B, dt):
         """

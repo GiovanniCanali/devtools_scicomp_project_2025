@@ -103,7 +103,7 @@ def compute_S4DReal(N, real_random=False):
     if real_random:
         real_part = torch.rand(N, dtype=torch.float32)
     else:
-        real_part = torch.arange(1, N + 1, dtype=torch.float32)
+        real_part = torch.arange(N, dtype=torch.float32)
     return -(real_part + 1)
 
 
@@ -131,3 +131,21 @@ def compute_dplr(A):
     p = Vc @ p.to(Vc.dtype)
     q = Vc @ q.to(Vc.dtype)
     return Lambda, p, q
+
+
+def initialize_dt(input_dim, dt_min, dt_max, inverse_softplus=False):
+    """
+    Initialize the time step dt for the S4 and S6 blocks.
+
+    :param float dt_min: The minimum time step for discretization.
+    :param float dt_max: The maximum time step for discretization.
+    :return: Initialized time step dt tensor of shape (input_dim,).
+    :rtype: torch.Tensor
+    """
+    # Sample dt from a uniform distribution on [dt_min, dt_max]
+    dt = torch.rand(input_dim) * (dt_max - dt_min) + dt_min
+
+    # Apply the inverse softplus to dt
+    dt = torch.log(torch.exp(dt) - 1.0 + 1e-6) if inverse_softplus else dt
+
+    return dt

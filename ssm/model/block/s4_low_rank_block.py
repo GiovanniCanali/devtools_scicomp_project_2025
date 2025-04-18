@@ -1,6 +1,6 @@
 import torch
 from .s4_block_interface import S4BlockInterface
-from ...utils import compute_hippo, compute_dplr
+from ...utils import compute_hippo, compute_dplr, initialize_dt
 
 
 class S4LowRankBlock(S4BlockInterface):
@@ -23,7 +23,8 @@ class S4LowRankBlock(S4BlockInterface):
         input_dim,
         hid_dim,
         method,
-        dt=0.1,
+        dt_min=0.001,
+        dt_max=0.01,
         hippo=True,
         **kwargs,
     ):
@@ -34,7 +35,10 @@ class S4LowRankBlock(S4BlockInterface):
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Low-rank S4
             block only supports the convolutional method.
-        :param float dt: The time step for discretization. Default is `0.1`.
+        :param float dt_min: Minimum time step for discretization. Default is
+            `0.001`.
+        :param float dt_max: Maximum time step for discretization. Default is
+            `0.01`.
         :param bool hippo: Whether to use the HIPPO matrix for initialization.
             Default is `True`.
         :param dict kwargs: Additional arguments for the class constructor.
@@ -43,10 +47,18 @@ class S4LowRankBlock(S4BlockInterface):
         B = torch.nn.Parameter(torch.rand(input_dim, hid_dim))
         C = torch.nn.Parameter(torch.rand(input_dim, hid_dim))
 
+        # Initialize dt
+        dt = initialize_dt(
+            input_dim=input_dim,
+            dt_max=dt_max,
+            dt_min=dt_min,
+            inverse_softplus=False,
+        ).unsqueeze(-1)
+
         super().__init__(
             input_dim=input_dim,
             hid_dim=hid_dim,
-            dt=torch.tensor(dt),
+            dt=dt,
             A=torch.empty((1)),
             B=B,
             C=C,
@@ -131,12 +143,11 @@ class S4LowRankBlock(S4BlockInterface):
 
         # Compute the denominator for the Cauchy product
         g = (
-            (2.0 / self.dt) * (1.0 - self.omega) / (1.0 + self.omega)
+            (2.0 / self.dt)
+            * (1.0 - self.omega.unsqueeze(0))
+            / (1.0 + self.omega.unsqueeze(0))
         ).unsqueeze(-1)
-        denominator = torch.cat(
-            [g - self.Lambda[i : i + 1, :, :] for i in range(self.input_dim)],
-            dim=0,
-        )
+        denominator = g - self.Lambda
 
         # Compute the Cauchy product
         k00, k01, k10, k11 = self._cauchy_dot(a0, a1, b0, b1, denominator)

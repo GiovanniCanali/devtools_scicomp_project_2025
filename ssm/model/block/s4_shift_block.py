@@ -39,7 +39,8 @@ class S4ShiftBlock(S4BaseBlock):
         input_dim,
         hid_dim,
         method,
-        dt=0.1,
+        dt_min=0.001,
+        dt_max=0.01,
         **kwargs,
     ):
         """
@@ -49,15 +50,20 @@ class S4ShiftBlock(S4BaseBlock):
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
-        :param float dt: The time step for discretization. Default is `0.1`.
+        :param float dt_min: The minimum time step for discretization.
+            Default is `0.001`.
+        :param float dt_max: The maximum time step for discretization.
+            Default is `0.01`.
         :param dict kwargs: Additional arguments for the class constructor.
         """
+
         super().__init__(
             input_dim=input_dim,
             hid_dim=hid_dim,
             method=method,
-            dt=dt,
             hippo=False,
+            dt_min=dt_min,
+            dt_max=dt_max,
             **kwargs,
         )
 

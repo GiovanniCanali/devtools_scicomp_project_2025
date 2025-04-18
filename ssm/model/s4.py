@@ -1,5 +1,6 @@
 import torch
 from .block import S4BaseBlock, S4LowRankBlock, S4DBlock
+from .block.residual_block import ResidualBlock
 
 
 class S4(torch.nn.Module):
@@ -40,6 +41,8 @@ class S4(torch.nn.Module):
         n_layers=2,
         block_type="S4",
         activation=torch.nn.ReLU,
+        layer_norm=True,
+        residual=True,
         **kwargs,
     ):
         """
@@ -55,6 +58,10 @@ class S4(torch.nn.Module):
             are: `"S4"`, `"S4D"`, `"S4LowRank"`. Default is `"S4"`.
         :param torch.nn.Module activation: The activation function.
             Default is `torch.nn.ReLU`.
+        :param bool layer_norm: If `True`, layer normalization is applied after
+            each S4 block. Default is `True`.
+        :param bool residual: If `True`, a residual connection is added to the
+            output of each S4 block. Default is `True`.
         :param dict kwargs: Additional keyword arguments used in the block.
         :raises ValueError: If the specified `block_type` is not valid.
         """
@@ -76,20 +83,21 @@ class S4(torch.nn.Module):
                 "Available options are: 'S4', 'S4D', 'S4LowRank'."
             )
 
-        # Initialize the layers
         layers = []
         for _ in range(n_layers):
-            layers.append(
+            tmp = torch.nn.Sequential(
                 block_class(
                     input_dim=input_dim,
                     hid_dim=hid_dim,
                     method=method,
                     **kwargs,
-                )
+                ),
+                activation(),
+                torch.nn.Linear(input_dim, input_dim),
+                # Conditionally add layer normalization
+                *([torch.nn.LayerNorm(input_dim)] if layer_norm else []),
             )
-            layers.append(activation())
-            layers.append(torch.nn.Linear(input_dim, input_dim))
-            layers.append(torch.nn.LayerNorm(input_dim))
+            layers.append(tmp if not residual else ResidualBlock(tmp))
         self.layers = torch.nn.Sequential(*layers)
 
         # Initialize the decoder to match the output dimension

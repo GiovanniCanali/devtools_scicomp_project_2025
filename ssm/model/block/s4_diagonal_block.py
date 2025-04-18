@@ -5,6 +5,7 @@ from ...utils import (
     compute_S4DLin,
     compute_S4DQuad,
     compute_S4DReal,
+    initialize_dt,
 )
 
 
@@ -45,7 +46,8 @@ class S4DBlock(S4BlockInterface):
         input_dim,
         hid_dim,
         method,
-        dt=0.1,
+        dt_max=0.01,
+        dt_min=0.001,
         initialization="S4D-Inv",
         real_random=False,
         imag_random=False,
@@ -59,7 +61,10 @@ class S4DBlock(S4BlockInterface):
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
-        :param float dt: The time step for discretization. Default is `0.1`.
+        :param float dt_max: The maximum time step for discretization.
+            Default is `0.01`.
+        :param float dt_min: The minimum time step for discretization.
+            Default is `0.001`.
         :param str initialization: The method for initializing the A matrix.
             Options are: S4D-Inv, S4D-Lin, S4D-Quad, S4D-Real.
             Default is `"S4D-Inv"`.
@@ -82,7 +87,13 @@ class S4DBlock(S4BlockInterface):
         B = torch.rand(input_dim, hid_dim)
         C = torch.rand(input_dim, hid_dim)
 
-        dt = torch.tensor(dt, dtype=torch.float32)
+        # Initialize the time step dt
+        dt = initialize_dt(
+            input_dim=input_dim,
+            dt_max=dt_max,
+            dt_min=dt_min,
+            inverse_softplus=False,
+        )
 
         super().__init__(
             input_dim=input_dim,
