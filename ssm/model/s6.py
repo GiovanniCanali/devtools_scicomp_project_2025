@@ -36,7 +36,7 @@ class S6(torch.nn.Module):
         output_dim,
         n_layers=2,
         activation=torch.nn.GELU,
-        real_random=False,
+        real_random=True,
         residual=True,
         layer_norm=True,
         **kwargs,

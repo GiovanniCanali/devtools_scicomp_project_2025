@@ -4,14 +4,13 @@ model:
   method: "convolutional"
   activation: torch.nn.GELU
   hippo: True
-  dt_max: 0.1
-  dt_min: 0.01
+  dt_max: 0.01
+  dt_min: 0.001
   residual: True
   layer_norm: True
 
-
-trainer:
-  logging_dir: "logs/s4_low_rank"
+logger:
+  logging_dir: "logs/s4"
 
 
   

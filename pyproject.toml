@@ -25,6 +25,7 @@ dependencies = { file = ["requirements.txt"] }
 
 [project.optional-dependencies]
 dev = ["black @ git+https://github.com/psf/black", "pytest"]
+doc = ["sphinx", "sphinx_rtd_theme", "nbsphinx", "sphinx-autodoc-typehints"]
 
 [tool.black]
 line-length = 80

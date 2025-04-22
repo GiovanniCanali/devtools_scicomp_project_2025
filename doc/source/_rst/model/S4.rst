@@ -1,0 +1,9 @@
+S4
+===========
+.. currentmodule:: ssm.model
+
+
+.. autoclass:: S4
+   :members:
+   :private-members:
+   :show-inheritance:

@@ -4,6 +4,7 @@ import argparse
 from copy import deepcopy
 from .dataset import CopyDataset
 from .trainer import Trainer
+from .logger import Logger
 
 
 class TrainingCLI:
@@ -31,9 +32,11 @@ class TrainingCLI:
             config_file = self.args.config_file
         config = self.load_config(config_file)
         model = self.init_model(deepcopy(config["model"]))
-        dataset = deepcopy(CopyDataset(**deepcopy(config["dataset"])))
+        dataset = CopyDataset(**deepcopy(config["dataset"]))
+        logger = Logger(**deepcopy(config["logger"]))
         trainer_config = deepcopy(config["trainer"])
         trainer_config["dataset"] = dataset
+        trainer_config["logger"] = logger
         self.trainer = self.init_trainer(trainer_config, model, dataset)
         self.write_on_tensorboard(config)
 
@@ -170,3 +173,10 @@ class TrainingCLI:
             config_str = yaml.dump(config)
             self.trainer.writer.add_text("config", config_str, global_step=0)
             self.trainer.writer.flush()
+
+    def initialize_logger(self, config):
+        """
+        Initialize the logger for TensorBoard.
+        :param dict config: Configuration dictionary.
+        """
+        logger = config.get("logger", {})

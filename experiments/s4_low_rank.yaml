@@ -9,8 +9,7 @@ model:
   residual: True
   layer_norm: True
 
-
-trainer:
+logger:
   logging_dir: "logs/s4_low_rank"
 
 

@@ -1,0 +1,9 @@
+H3
+===========
+.. currentmodule:: ssm.model
+
+
+.. autoclass:: H3
+   :members:
+   :private-members:
+   :show-inheritance:

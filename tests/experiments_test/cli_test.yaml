@@ -24,8 +24,10 @@ dataset:
 trainer:
     steps: 15
     test_steps: 10
-    logging_steps: 5
-    logging_dir: "tests/logs/testing_logs"
     device: "cpu"
+
+logger:
+  logging_steps: 5
+  logging_dir: "tests/logs/testing_logs"
 
   

@@ -3,7 +3,8 @@ import shutil
 import torch
 from ssm import Trainer
 from ssm.model import S4, S6, Mamba
-from ssm.dataset import CopyDataset
+from ssm import CopyDataset
+from ssm import Logger
 
 input_dim = 10
 hid_dim = 12
@@ -53,27 +54,36 @@ dataset = CopyDataset(
 @pytest.mark.parametrize("model", [S4_model, S6_model, Mamba_model])
 def test_constructor(model):
 
+    logger = Logger(
+        logging_dir="tests/logs/",
+        tensorboard_logger=True,
+        logging_steps=10,
+    )
+
     Trainer(
         model=model,
         steps=100,
         test_steps=10,
-        logging_steps=10,
         dataset=dataset,
-        logging_dir="tests/logs/",
+        logger=logger,
         device="cpu",
     )
 
 
 @pytest.mark.parametrize("model", [S4_model, Mamba_model])
 def test_fit(model):
+    logger = Logger(
+        logging_dir="tests/logs/",
+        tensorboard_logger=True,
+        logging_steps=10,
+    )
 
     trainer = Trainer(
         model=model,
         dataset=dataset,
         steps=2,
         test_steps=10,
-        logging_steps=10,
-        logging_dir="tests/logs/",
+        logger=logger,
         device="cpu",
     )
 
@@ -84,35 +94,41 @@ def test_fit(model):
 @pytest.mark.parametrize("tensorboard_logger", [True, False])
 def test_tensorboard_logging(tensorboard_logger):
 
+    logger = Logger(
+        logging_dir="tests/logs/",
+        tensorboard_logger=tensorboard_logger,
+        logging_steps=10,
+    )
+
     trainer = Trainer(
         model=S4_model,
         dataset=dataset,
         steps=2,
         test_steps=10,
-        logging_steps=10,
-        tensorboard_logger=tensorboard_logger,
-        logging_dir="tests/logs/",
+        logger=logger,
         device="cpu",
     )
 
     trainer.fit()
-    if not tensorboard_logger:
-        with pytest.raises(FileNotFoundError):
-            shutil.rmtree("tests/logs/")
-    else:
-        shutil.rmtree("tests/logs/")
+
+    shutil.rmtree("tests/logs/")
 
 
 def test_custom_optimizer():
+
+    logger = Logger(
+        logging_dir="tests/logs/",
+        tensorboard_logger=True,
+        logging_steps=10,
+    )
 
     trainer = Trainer(
         model=S4_model,
         dataset=dataset,
         steps=2,
+        logger=logger,
         test_steps=10,
-        logging_steps=10,
         optimizer_params={"lr": 0.05, "weight_decay": 0.1},
-        logging_dir="tests/logs/",
         device="cpu",
     )
 
@@ -125,10 +141,9 @@ def test_custom_optimizer():
         dataset=dataset,
         steps=2,
         test_steps=10,
-        logging_steps=10,
+        logger=logger,
         optimizer_class=torch.optim.SGD,
         optimizer_params={"lr": 0.07, "momentum": 0.9},
-        logging_dir="tests/logs/",
         device="cpu",
     )
 
@@ -140,13 +155,18 @@ def test_custom_optimizer():
 @pytest.mark.parametrize("model", [S4_model, Mamba_model])
 def test_test(model):
 
+    logger = Logger(
+        logging_dir="tests/logs/",
+        tensorboard_logger=True,
+        logging_steps=10,
+    )
+
     trainer = Trainer(
         model=model,
         dataset=dataset,
         steps=2,
+        logger=logger,
         test_steps=10,
-        logging_steps=10,
-        logging_dir="tests/logs/",
         device="cpu",
     )
 
@@ -157,14 +177,19 @@ def test_test(model):
 
 def test_accumulation_steps():
 
+    logger = Logger(
+        logging_dir="tests/logs/",
+        tensorboard_logger=True,
+        logging_steps=10,
+    )
+
     trainer = Trainer(
         model=S4_model,
         dataset=dataset,
         steps=2,
         test_steps=10,
-        logging_steps=10,
         accumulation_steps=2,
-        logging_dir="tests/logs/",
+        logger=logger,
         device="cpu",
     )
 

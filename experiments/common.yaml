@@ -6,13 +6,16 @@ dataset:
     selective: False
 
 trainer:
-    steps: 2
+    steps: 100000
     test_steps: 10
-    logging_steps: 100
     optimizer_class: torch.optim.AdamW
     optimizer_params:
         lr: 0.0001
     device: "cuda"
+
+logger:
+    logging_steps: 100
+    enable_progress_bar: False
 
 model:
   input_dim: 16

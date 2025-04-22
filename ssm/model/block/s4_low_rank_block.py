@@ -24,7 +24,7 @@ class S4LowRankBlock(S4BlockInterface):
         hid_dim,
         method,
         dt_min=0.001,
-        dt_max=0.01,
+        dt_max=0.1,
         hippo=True,
         **kwargs,
     ):
@@ -137,13 +137,14 @@ class S4LowRankBlock(S4BlockInterface):
         :return: The convolution kernel K.
         :rtype: torch.Tensor
         """
+        dt = torch.clamp(self.dt, min=1e-5)
         # Compute the matrices for the Cauchy product
         a0, a1 = self.C.conj(), self.Q
         b0, b1 = self.B, self.P
 
         # Compute the denominator for the Cauchy product
         g = (
-            (2.0 / self.dt)
+            (2.0 / dt)
             * (1.0 - self.omega.unsqueeze(0))
             / (1.0 + self.omega.unsqueeze(0))
         ).unsqueeze(-1)

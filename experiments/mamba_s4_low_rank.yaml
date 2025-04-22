@@ -1,7 +1,5 @@
 model:
   model: ssm.model.Mamba
-  dt_min: 0.001
-  dt_max: 0.01
   expansion_factor: 2
   kernel_size: 4
   normalization: True
@@ -11,7 +9,7 @@ model:
   dt_min: 0.01
   method: "convolutional"
 
-trainer:
+logger:
     logging_dir: "logs/mamba_s4_low_rank"
 
   

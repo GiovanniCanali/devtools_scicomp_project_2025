@@ -12,7 +12,7 @@ class DeltaNetwork(torch.nn.Module):
     input dimension.
     """
 
-    def __init__(self, input_dim, dt_min, dt_max):
+    def __init__(self, input_dim, dt_min, dt_max, dt_rank, dt_scale=1.0):
         """
         Initialization of the Delta Network.
 
@@ -22,18 +22,22 @@ class DeltaNetwork(torch.nn.Module):
         """
         super().__init__()
         self.input_dim = input_dim
-        self.linear = torch.nn.Linear(input_dim, 1, bias=False)
+        self.linear = torch.nn.Linear(input_dim, dt_rank, bias=True)
         self.activation = torch.nn.Softplus()
 
         # Initialize the time step dt
-        self.dt = torch.nn.Parameter(
-            initialize_dt(
-                input_dim=input_dim,
-                dt_min=dt_min,
-                dt_max=dt_max,
-                inverse_softplus=True,
-            )
+        dt = initialize_dt(
+            input_dim=input_dim,
+            dt_min=dt_min,
+            dt_max=dt_max,
+            inverse_softplus=True,
         )
+
+        self.project = torch.nn.Linear(dt_rank, input_dim, bias=True)
+        dt_init_std = dt_rank**-0.5 * dt_scale
+        torch.nn.init.uniform_(self.project.weight, -dt_init_std, dt_init_std)
+        with torch.no_grad():
+            self.project.bias.copy_(dt)
 
     def forward(self, x):
         """
@@ -44,8 +48,7 @@ class DeltaNetwork(torch.nn.Module):
         :rtype: torch.Tensor
         """
         x = self.linear(x)
-        x = x.expand(-1, -1, self.input_dim)
-        return self.activation(x + self.dt)
+        return self.activation(self.project(x))
 
 
 class S6Block(torch.nn.Module):
@@ -77,8 +80,9 @@ class S6Block(torch.nn.Module):
         input_dim,
         hid_dim,
         dt_min=0.001,
-        dt_max=0.01,
+        dt_max=0.1,
         real_random=False,
+        dt_rank=4,
         **kwargs,
     ):
         """
@@ -92,6 +96,7 @@ class S6Block(torch.nn.Module):
             Default is `0.01`.
         :param bool real_random: If `True`, the real part of the A matrix is
             initialized at random between 0 and 1. Default is `False`.
+        :param int dt_rank: The rank of the time step. Default is `1`.
         :param dict kwargs: Additional keyword arguments.
         """
         super().__init__()
@@ -102,14 +107,17 @@ class S6Block(torch.nn.Module):
 
         # Initialize the matrix A
         A = compute_S4DReal(hid_dim, real_random=real_random).unsqueeze(0)
-        self.A = torch.nn.Parameter(A.repeat(input_dim, 1))
+        self.A = torch.nn.Parameter(
+            A.repeat(input_dim, 1).unsqueeze(0).unsqueeze(0)
+        )
 
         # Initialize the networks to compute matrices B and C
         self.linear_b = torch.nn.Linear(input_dim, hid_dim)
         self.linear_c = torch.nn.Linear(input_dim, hid_dim)
         self.delta_net = DeltaNetwork(
-            input_dim=input_dim, dt_min=dt_min, dt_max=dt_max
+            input_dim=input_dim, dt_min=dt_min, dt_max=dt_max, dt_rank=dt_rank
         )
+        self.D = torch.nn.Parameter(torch.ones(input_dim))
 
     def _discretize(self, A, B, dt):
         """
@@ -151,7 +159,7 @@ class S6Block(torch.nn.Module):
 
         # Perform parallel scan and compute the output
         scan = self._parallel_scan(A_bar, term2)
-        return torch.sum(scan * C.unsqueeze(2), dim=-1)
+        return torch.sum(scan * C.unsqueeze(2), dim=-1) + self.D * x
 
     @staticmethod
     def _parallel_scan(a, b):

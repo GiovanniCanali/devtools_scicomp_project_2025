@@ -9,7 +9,7 @@ def test_s6_block_constructor():
 
     model = S6Block(input_dim=x.shape[2], hid_dim=hid_dim)
 
-    assert model.A.shape == (x.shape[2], hid_dim)
+    assert model.A.shape == (1, 1, x.shape[2], hid_dim)
     assert hasattr(model, "linear_b")
     assert hasattr(model, "linear_c")
     assert hasattr(model, "delta_net")
