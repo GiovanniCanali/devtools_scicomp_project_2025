@@ -42,7 +42,7 @@ def test_trainer():
 
     assert trainer.steps == 15
     assert trainer.test_steps == 10
-    assert trainer.logger.logging_steps == 5
+    assert trainer.metric_tracker.logging_steps == 5
 
     shutil.rmtree("tests/logs/testing_logs")
 

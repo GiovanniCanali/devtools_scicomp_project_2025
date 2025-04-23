@@ -1,6 +1,7 @@
 import torch
 from .block import S4BaseBlock, S4LowRankBlock, S4DBlock
 from .block.residual_block import ResidualBlock
+from .block.mixing_block import MixingBlock
 
 
 class S4(torch.nn.Module):
@@ -40,7 +41,7 @@ class S4(torch.nn.Module):
         method,
         n_layers=2,
         block_type="S4",
-        activation=torch.nn.ReLU,
+        activation=torch.nn.GELU,
         layer_norm=True,
         residual=True,
         **kwargs,
@@ -93,7 +94,8 @@ class S4(torch.nn.Module):
                     **kwargs,
                 ),
                 activation(),
-                torch.nn.Linear(input_dim, input_dim),
+                # Mixing layer
+                MixingBlock(input_dim),
                 # Conditionally add layer normalization
                 *([torch.nn.LayerNorm(input_dim)] if layer_norm else []),
             )

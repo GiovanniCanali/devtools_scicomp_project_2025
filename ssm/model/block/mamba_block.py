@@ -44,35 +44,24 @@ class MambaBlock(torch.nn.Module):
         """
         super().__init__()
 
-        kwargs["input_dim"] = expansion_factor * input_dim
-        if "hid_dim" in kwargs:
-            warnings.warn(
-                "hidden_dim is determined by the input_net, ignoring "
-                "kwargs['hid_dim']"
-            )
-            kwargs.pop("hid_dim")
-        kwargs["hid_dim"] = expansion_factor * input_dim
-
-        self.input_net = torch.nn.Linear(
-            input_dim, 2 * expansion_factor * input_dim
-        )
-        self.output_net = torch.nn.Linear(
-            expansion_factor * input_dim, input_dim
-        )
+        mamba_dim = input_dim * expansion_factor
+        kwargs["input_dim"] = mamba_dim
+        self.input_net = torch.nn.Linear(input_dim, mamba_dim * 2)
+        self.output_net = torch.nn.Linear(mamba_dim, input_dim)
         self.ssm = self._initialize_ssm_block(ssm_type, **kwargs)
         self.silu = torch.nn.SiLU()
         self.conv1d = torch.nn.Conv1d(
-            in_channels=expansion_factor * input_dim,
-            out_channels=expansion_factor * input_dim,
+            in_channels=mamba_dim,
+            out_channels=mamba_dim,
             kernel_size=kernel_size,
             padding=kernel_size - 1,
+            groups=mamba_dim,
         )
         if normalization:
-            self.norm = torch.nn.LayerNorm(
-                expansion_factor * input_dim, elementwise_affine=False
-            )
+            self.norm = torch.nn.LayerNorm(mamba_dim)
         else:
             self.norm = None
+        self.D = torch.nn.Parameter(torch.randn(1, 1, input_dim))
 
     def forward(self, x):
         """
@@ -90,7 +79,7 @@ class MambaBlock(torch.nn.Module):
         if self.norm is not None:
             x = self.norm(x)
         x = self.output_net(x)
-        return x
+        return x + self.D * x
 
     def _initialize_ssm_block(self, ssm_type, **kwargs):
         """

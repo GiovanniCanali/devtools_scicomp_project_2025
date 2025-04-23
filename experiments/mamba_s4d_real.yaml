@@ -6,12 +6,15 @@ model:
   ssm_type: "S4D"
   initialization: "S4D-Real"
   discretization: "bilinear"
-  random_real: True
   dt_min: 0.001
-  dt_max: 0.01
+  dt_max: 0.1
   method: "convolutional"
+  input_dim: 8
+  hid_dim: 64
+  output_dim: 8
+  n_layers: 2
 
-logger:
-    logging_dir: "logs/mamba_s4d_real"
+metric_tracker:
+    experiment: "mamba_s4d_real"
 
   

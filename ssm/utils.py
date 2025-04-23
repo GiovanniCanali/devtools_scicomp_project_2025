@@ -1,3 +1,4 @@
+import math
 import torch
 
 
@@ -142,10 +143,14 @@ def initialize_dt(input_dim, dt_min, dt_max, inverse_softplus=False):
     :return: Initialized time step dt tensor of shape (input_dim,).
     :rtype: torch.Tensor
     """
+
     # Sample dt from a uniform distribution on [dt_min, dt_max]
-    dt = torch.rand(input_dim) * (dt_max - dt_min) + dt_min
+    dt = torch.exp(
+        torch.rand(input_dim) * (math.log(dt_max) - math.log(dt_min))
+        + math.log(dt_min)
+    ).clamp(min=1e-4)
 
     # Apply the inverse softplus to dt
-    dt = torch.log(torch.exp(dt) - 1.0 + 1e-6) if inverse_softplus else dt
+    dt = dt + torch.log(-torch.expm1(-dt)) if inverse_softplus else dt
 
     return dt

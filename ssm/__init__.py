@@ -1,6 +1,6 @@
-all = ["CopyDataset", "Trainer", "Logger", "TrainingCLI"]
+all = ["CopyDataset", "Trainer", "MetricTracker", "TrainingCLI"]
 
 from .dataset import CopyDataset
 from .trainer import Trainer
 from .cli import TrainingCLI
-from .logger import Logger
+from .metric_tracker import MetricTracker

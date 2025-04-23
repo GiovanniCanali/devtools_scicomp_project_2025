@@ -1,6 +1,7 @@
 import torch
 from .block import S6Block
 from .block.residual_block import ResidualBlock
+from .block.mixing_block import MixingBlock
 
 
 class S6(torch.nn.Module):
@@ -36,7 +37,7 @@ class S6(torch.nn.Module):
         output_dim,
         n_layers=2,
         activation=torch.nn.GELU,
-        real_random=True,
+        real_random=False,
         residual=True,
         layer_norm=True,
         **kwargs,
@@ -73,7 +74,7 @@ class S6(torch.nn.Module):
                     **kwargs,
                 ),
                 activation(),
-                torch.nn.Linear(input_dim, input_dim),
+                MixingBlock(input_dim),
                 *([torch.nn.LayerNorm(input_dim)] if layer_norm else []),
             )
             layers.append(tmp if not residual else ResidualBlock(tmp))

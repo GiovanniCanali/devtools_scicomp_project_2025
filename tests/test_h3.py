@@ -10,7 +10,7 @@ hid_dim = 10
 @pytest.mark.parametrize("heads", [1, 5])
 @pytest.mark.parametrize("discretisation", ["bilinear", "zoh"])
 @pytest.mark.parametrize("normalization", [True, False])
-@pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
+@pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Real"])
 def test_h3_constructor(
     method, heads, discretisation, normalization, init_method
 ):
@@ -33,7 +33,7 @@ def test_h3_constructor(
 @pytest.mark.parametrize("heads", [1, 5])
 @pytest.mark.parametrize("discretisation", ["bilinear", "zoh"])
 @pytest.mark.parametrize("normalization", [True, False])
-@pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
+@pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Real"])
 def test_h3_forward(method, heads, discretisation, normalization, init_method):
 
     model = H3(
@@ -57,7 +57,7 @@ def test_h3_forward(method, heads, discretisation, normalization, init_method):
 @pytest.mark.parametrize("heads", [1, 5])
 @pytest.mark.parametrize("discretisation", ["bilinear", "zoh"])
 @pytest.mark.parametrize("normalization", [True, False])
-@pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Quad"])
+@pytest.mark.parametrize("init_method", ["S4D-Inv", "S4D-Lin", "S4D-Real"])
 def test_h3_backward(method, heads, discretisation, normalization, init_method):
 
     model = H3(

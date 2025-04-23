@@ -77,10 +77,11 @@ class S4BlockInterface(torch.nn.Module, ABC):
         self.method = method
 
         # Initialize matrices A, B, C and the time step dt
-        self.A, self.B, self.C, self.dt = (
+        self.A, self.B, self.C, self.D, self.dt = (
             torch.nn.Parameter(A),
             torch.nn.Parameter(B),
             torch.nn.Parameter(C),
+            torch.nn.Parameter(torch.rand(1, 1, input_dim)),
             torch.nn.Parameter(dt),
         )
 
@@ -108,8 +109,9 @@ class S4BlockInterface(torch.nn.Module, ABC):
         # Iterate over time steps
         for t in range(L):
             h = self._recurrent_step(A_bar, B_bar, C, x, y, h, t)
+        print(x.shape)
 
-        return y
+        return y + self.D * x
 
     def forward_convolutional(self, x):
         """
@@ -124,17 +126,17 @@ class S4BlockInterface(torch.nn.Module, ABC):
         L = x.shape[1]
 
         # Reshape input to [B, D, L]
-        x = x.transpose(1, 2)
+        x_ = x.transpose(1, 2)
 
         # Compute the convolution kernel K
         K = self._compute_K(L)
 
         # Pad input and kernel to avoid circular convolution effects
-        x = torch.nn.functional.pad(x, (0, L))
+        x_ = torch.nn.functional.pad(x_, (0, L))
         K = torch.nn.functional.pad(K, (0, L))
 
         # Compute FFT of input and kernel
-        x_fft = torch.fft.rfft(x, dim=2)
+        x_fft = torch.fft.rfft(x_, dim=2)
         K_fft = torch.fft.rfft(K, dim=1).unsqueeze(0)
 
         # Element-wise multiplication in frequency domain
@@ -143,7 +145,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         # Inverse FFT
         y = torch.fft.irfft(y_fft, n=2 * L, dim=2)
 
-        return y[:, :, :L].transpose(1, 2)
+        return y[:, :, :L].transpose(1, 2) + self.D * x
 
     def change_forward(self, method):
         """

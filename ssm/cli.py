@@ -1,10 +1,11 @@
+import os
 import yaml
 import importlib
 import argparse
 from copy import deepcopy
 from .dataset import CopyDataset
 from .trainer import Trainer
-from .logger import Logger
+from .metric_tracker import MetricTracker
 
 
 class TrainingCLI:
@@ -33,10 +34,10 @@ class TrainingCLI:
         config = self.load_config(config_file)
         model = self.init_model(deepcopy(config["model"]))
         dataset = CopyDataset(**deepcopy(config["dataset"]))
-        logger = Logger(**deepcopy(config["logger"]))
+        metric_tracker = MetricTracker(**deepcopy(config["metric_tracker"]))
         trainer_config = deepcopy(config["trainer"])
         trainer_config["dataset"] = dataset
-        trainer_config["logger"] = logger
+        trainer_config["metric_tracker"] = metric_tracker
         self.trainer = self.init_trainer(trainer_config, model, dataset)
         self.write_on_tensorboard(config)
 
@@ -47,7 +48,6 @@ class TrainingCLI:
         :return: Configuration dictionary.
         :rtype: dict
         """
-        import os
 
         path = "/".join(config_file.split("/")[:-1]) + "/common.yaml"
         if os.path.exists(path):

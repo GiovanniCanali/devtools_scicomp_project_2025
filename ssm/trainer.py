@@ -12,14 +12,12 @@ class Trainer:
         model,
         dataset,
         steps,
-        logger,
+        metric_tracker,
         accumulation_steps=1,
         device=None,
         test_steps=0,
         optimizer_class=torch.optim.Adam,
         optimizer_params={"lr": 1e-3},
-        scheduler_class=None,
-        scheduler_params=None,
     ):
         """
         Initialize the Trainer class.
@@ -30,20 +28,18 @@ class Trainer:
         :param int steps: The number of training steps.
         :param int accumulation_steps: The number of steps to accumulate
             gradients before updating the model parameters.
-        :param int logging_steps: The number of steps between logging. For
-            logging it is meant both the update of the progress bar and the
-            TensorBoard logging. If you want to log only the progress bar
-            set `tensotrboard_logger` to `False`.
         :param torch.device device: The device to use for training (CPU or GPU).
         :param int test_steps: The number of test steps.
         :param torch.optim.Optimizer optimizer_class: The optimizer class to use.
         :param dict optimizer_params: The parameters for the optimizer.
+        :param int patience: The number of epochs with no improvement after
+            which training will be stopped. Default is 0 (disabled).
         """
         self.dataset = iter(dataset)
         n_classes = dataset.alphabet_size
         self.model = EmbeddingBlock(model, n_classes, dataset.mem_tokens)
         self.steps = steps
-        self.logger = logger
+        self.metric_tracker = metric_tracker
         self.accumulation_steps = accumulation_steps
         self.test_steps = test_steps
         self.device = device if device else self.set_device()
@@ -61,12 +57,12 @@ class Trainer:
         """
         self.move_to_device()
         self.model.train()
-        self.logger.initialize_pbar(self.steps)
+        self.metric_tracker.initialize_pbar(self.steps)
 
         accumulation_counter = 0
         accumulated_loss = 0.0
 
-        for i in self.logger.pbar:
+        for i in self.metric_tracker.pbar:
             # Get new sample
             x, y = next(self.dataset)
             x, y = x.to(self.device), y.to(self.device)
@@ -88,9 +84,14 @@ class Trainer:
                 self.optimizer.step()
                 self.optimizer.zero_grad()
                 # Log the metrics
-                self.logger.step(accumulated_loss.item(), accuracy.item())
+                self.metric_tracker.step(
+                    accumulated_loss.item(), accuracy.item()
+                )
                 accumulated_loss = 0.0
-        self.logger.save_model(self.model)
+                if self.metric_tracker.stop_training:
+                    break
+
+        self.metric_tracker.save_model(self.model)
 
     def test(self):
         """
@@ -99,7 +100,8 @@ class Trainer:
         self.move_to_device()
         self.model.eval()
         pbar = tqdm(
-            range(self.test_steps), disable=not self.logger.enable_progress_bar
+            range(self.test_steps),
+            disable=not self.metric_tracker.enable_progress_bar,
         )
         accuracy = 0
         loss = 0
@@ -116,13 +118,13 @@ class Trainer:
         print(f"Test Loss: {loss / self.test_steps}")
         print(f"Test Accuracy: {accuracy / self.test_steps}")
 
-        self.logger.log_on_tensorboard(
+        self.metric_tracker.log_on_tensorboard(
             "test/loss", loss / self.test_steps, self.test_steps
         )
-        self.logger.log_on_tensorboard(
+        self.metric_tracker.log_on_tensorboard(
             "test/accuracy", accuracy / self.test_steps, self.test_steps
         )
-        self.logger.writer.close()
+        self.metric_tracker.writer.close()
 
     def compute_metrics(self, output, y):
         """
@@ -185,7 +187,7 @@ class Trainer:
         num_params = self._count_parameters()
         print(f"Trainable parameters: {num_params['trainable']}")
         print(f"Non-trainable parameters: {num_params['non_trainable']}")
-        if self.logger is not None:
-            self.logger.write_model_summary(
+        if self.metric_tracker is not None:
+            self.metric_tracker.write_model_summary(
                 num_params["trainable"], num_params["non_trainable"]
             )

@@ -14,20 +14,18 @@ model:
   discretization: "bilinear"
 
 dataset:
-    sequence_len: 50
-    batch_size: 16
-    alphabet_size: 10
-    mem_tokens: 10
-    marker: -1
-    selective: False
+  sequence_len: 50
+  batch_size: 16
+  alphabet_size: 10
+  mem_tokens: 10
+  selective: False
 
 trainer:
-    steps: 15
-    test_steps: 10
-    device: "cpu"
-
-logger:
-  logging_steps: 5
-  logging_dir: "tests/logs/testing_logs"
-
+  steps: 15
+  test_steps: 10
+  device: "cpu"
   
+metric_tracker:
+  logging_steps: 5
+  repo: "tests/logs"
+  experiment: "testing_logs"

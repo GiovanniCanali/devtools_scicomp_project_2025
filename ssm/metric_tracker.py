@@ -1,23 +1,27 @@
 import os
+import warnings
 import torch
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+from .early_stopping import EarlyStopping
 
 
-class Logger:
+class MetricTracker:
     """
-    A logger class for training and evaluation.
-    This class handles logging of training metrics, including loss and
-    accuracy, to TensorBoard and the console. It also manages the
-    initialization of the TensorBoard writer and the progress bar.
+    A class to track the training metrics such as loss and accuracy.
+    This class is used to log the metrics during training and can be
+    extended to include additional metrics as needed. Moreover, it provides
+    early stopping functionality based on the accumulated loss.
     """
 
     def __init__(
         self,
         logging_steps,
-        logging_dir=None,
+        repo,
+        experiment=None,
         enable_progress_bar=True,
         tensorboard_logger=True,
+        patience=0,
     ):
         """
         Initialize the Logger class.
@@ -25,18 +29,21 @@ class Logger:
         :param str logging_dir: The directory to save the logs.
         :param bool enable_progress_bar: Whether to enable the progress bar.
         :param bool tensorboard_logger: Whether to enable TensorBoard logging.
+        :param int patience: The number of steps with no improvement after
+            which training will be stopped. Default is 0 (disabled).
         """
         self.loss = 0
         self.accuracy = 0
         self.steps = 0
         self.enable_progress_bar = enable_progress_bar
         self.logging_steps = logging_steps
-        self.logging_dir = self.logging_folder(logging_dir)
+        self.logging_dir = self.logging_folder(repo, experiment)
         os.makedirs(self.logging_dir, exist_ok=True)
         self.writer = (
             None if not tensorboard_logger else self.initialize_tensorboard()
         )
         self.pbar = None
+        self.early_stopping = EarlyStopping(patience)
 
     def initialize_tensorboard(self):
         """
@@ -81,9 +88,10 @@ class Logger:
                 accuracy=log_accuracy,
             )
             self.initialize()
+            self.early_stopping(log_loss)
 
     @staticmethod
-    def logging_folder(base_dir):
+    def logging_folder(repo, experiment):
         """
         Determine the next available logging folder based on existing
         directories in the specified base directory. The folder names are
@@ -94,11 +102,13 @@ class Logger:
         :return: The path to the next available logging folder.
         :rtype: str
         """
-        if base_dir is None:
-            warnings.warn(
-                "No logging directory provided. Using default directory."
-            )
-            base_dir = "logging_dir/default"
+        if repo is None:
+            repo = "logging_dir"
+            warnings.warn("No repo provided. Using default directory.")
+        if experiment is None:
+            experiment = "default"
+            warnings.warn("No experiment provided. Using 'default'.")
+        base_dir = os.path.join(repo, experiment)
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
         idx = [
@@ -157,3 +167,11 @@ class Logger:
         torch.save(
             model.state_dict(), os.path.join(self.logging_dir, "model.pth")
         )
+
+    @property
+    def stop_training(self):
+        """
+        Stop the training process.
+        :param torch.nn.Module model: The model to save.
+        """
+        return self.early_stopping.early_stop
