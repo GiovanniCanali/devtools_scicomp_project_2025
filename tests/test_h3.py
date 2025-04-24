@@ -16,7 +16,7 @@ def test_h3_constructor(
 ):
 
     model = H3(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         heads=heads,
@@ -37,7 +37,7 @@ def test_h3_constructor(
 def test_h3_forward(method, heads, discretisation, normalization, init_method):
 
     model = H3(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         heads=heads,
@@ -61,7 +61,7 @@ def test_h3_forward(method, heads, discretisation, normalization, init_method):
 def test_h3_backward(method, heads, discretisation, normalization, init_method):
 
     model = H3(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         heads=heads,

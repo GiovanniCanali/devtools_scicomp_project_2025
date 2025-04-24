@@ -28,3 +28,4 @@ metric_tracker:
   logging_steps: 5
   repo: "tests/logs"
   experiment: "testing_logs"
+  tensorboard_logger: False

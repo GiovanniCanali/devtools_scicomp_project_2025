@@ -20,7 +20,7 @@ class S4LowRankBlock(S4BlockInterface):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         method,
         dt_min=0.001,
@@ -31,7 +31,7 @@ class S4LowRankBlock(S4BlockInterface):
         """
         Initialization of the low-rank S4 block.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Low-rank S4
             block only supports the convolutional method.
@@ -44,19 +44,19 @@ class S4LowRankBlock(S4BlockInterface):
         :param dict kwargs: Additional arguments for the class constructor.
         """
         # Initialize matrices B and C
-        B = torch.nn.Parameter(torch.rand(input_dim, hid_dim))
-        C = torch.nn.Parameter(torch.rand(input_dim, hid_dim))
+        B = torch.nn.Parameter(torch.rand(model_dim, hid_dim))
+        C = torch.nn.Parameter(torch.rand(model_dim, hid_dim))
 
         # Initialize dt
         dt = initialize_dt(
-            input_dim=input_dim,
+            dim=model_dim,
             dt_max=dt_max,
             dt_min=dt_min,
             inverse_softplus=False,
         ).unsqueeze(-1)
 
         super().__init__(
-            input_dim=input_dim,
+            model_dim=model_dim,
             hid_dim=hid_dim,
             dt=dt,
             A=torch.empty((1)),
@@ -76,14 +76,14 @@ class S4LowRankBlock(S4BlockInterface):
         if hippo:
             A = compute_hippo(hid_dim)
             self.Lambda, self.P, self.Q = compute_dplr(A)
-            self.Lambda = self.Lambda.unsqueeze(0).repeat(input_dim, 1, 1)
-            self.P = self.P.repeat(input_dim, 1)
-            self.Q = self.Q.repeat(input_dim, 1)
+            self.Lambda = self.Lambda.unsqueeze(0).repeat(model_dim, 1, 1)
+            self.P = self.P.repeat(model_dim, 1)
+            self.Q = self.Q.repeat(model_dim, 1)
 
         else:
-            self.Lambda = torch.rand(input_dim, 1, hid_dim)
-            self.P = torch.rand(input_dim, hid_dim)
-            self.Q = torch.rand(input_dim, hid_dim)
+            self.Lambda = torch.rand(model_dim, 1, hid_dim)
+            self.P = torch.rand(model_dim, hid_dim)
+            self.Q = torch.rand(model_dim, hid_dim)
 
         self.Lambda = torch.nn.Parameter(self.Lambda)
         self.P = torch.nn.Parameter(self.P)

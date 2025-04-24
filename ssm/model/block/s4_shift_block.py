@@ -36,7 +36,7 @@ class S4ShiftBlock(S4BaseBlock):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         method,
         dt_min=0.001,
@@ -46,7 +46,7 @@ class S4ShiftBlock(S4BaseBlock):
         """
         Initialization of the S4 shift block.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
@@ -58,7 +58,7 @@ class S4ShiftBlock(S4BaseBlock):
         """
 
         super().__init__(
-            input_dim=input_dim,
+            model_dim=model_dim,
             hid_dim=hid_dim,
             method=method,
             hippo=False,
@@ -72,7 +72,7 @@ class S4ShiftBlock(S4BaseBlock):
 
         # Initialize the shift matrix A as a non-trainable parameter
         A = self.initialize_A(hid_dim)
-        A = A.repeat(input_dim, 1, 1)
+        A = A.repeat(model_dim, 1, 1)
         self.register_buffer("A", A)
 
     def initialize_A(self, hid_dim):

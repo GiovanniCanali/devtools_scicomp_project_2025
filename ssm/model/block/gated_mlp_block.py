@@ -46,7 +46,7 @@ class GatedMLPBlock(torch.nn.Module):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         activation,
         beta=1.0,
@@ -54,7 +54,7 @@ class GatedMLPBlock(torch.nn.Module):
         """
         Initialization of the Gated MLP block.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden dimension.
         :param str activation: The activation function to use. Available options
             are: `"silu"`, `"swish"`. Default is `"silu"`.
@@ -64,9 +64,9 @@ class GatedMLPBlock(torch.nn.Module):
         super().__init__()
 
         # Initialize the linear layers
-        self.linear_layer1 = torch.nn.Linear(input_dim, hid_dim)
-        self.linear_layer2 = torch.nn.Linear(input_dim, hid_dim)
-        self.output_layer = torch.nn.Linear(hid_dim, input_dim)
+        self.linear_layer1 = torch.nn.Linear(model_dim, hid_dim)
+        self.linear_layer2 = torch.nn.Linear(model_dim, hid_dim)
+        self.output_layer = torch.nn.Linear(hid_dim, model_dim)
 
         # Initialize the activation function
         if activation == "silu":

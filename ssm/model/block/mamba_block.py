@@ -20,9 +20,9 @@ class MambaBlock(torch.nn.Module):
 
     def __init__(
         self,
-        input_dim,
-        expansion_factor,
-        kernel_size,
+        model_dim,
+        expansion_factor=2,
+        kernel_size=4,
         normalization=False,
         ssm_type="S4",
         **kwargs,
@@ -30,7 +30,7 @@ class MambaBlock(torch.nn.Module):
         """
         Initializes the Mamba block with the specified parameters.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int expansion_factor: The expansion factor for the input
             dimension.
         :param int kernel_size: The kernel size for the convolutional layer.
@@ -44,10 +44,10 @@ class MambaBlock(torch.nn.Module):
         """
         super().__init__()
 
-        mamba_dim = input_dim * expansion_factor
-        kwargs["input_dim"] = mamba_dim
-        self.input_net = torch.nn.Linear(input_dim, mamba_dim * 2)
-        self.output_net = torch.nn.Linear(mamba_dim, input_dim)
+        mamba_dim = model_dim * expansion_factor
+        kwargs["model_dim"] = mamba_dim
+        self.input_net = torch.nn.Linear(model_dim, mamba_dim * 2)
+        self.output_net = torch.nn.Linear(mamba_dim, model_dim)
         self.ssm = self._initialize_ssm_block(ssm_type, **kwargs)
         self.silu = torch.nn.SiLU()
         self.conv1d = torch.nn.Conv1d(
@@ -61,7 +61,6 @@ class MambaBlock(torch.nn.Module):
             self.norm = torch.nn.LayerNorm(mamba_dim)
         else:
             self.norm = None
-        self.D = torch.nn.Parameter(torch.randn(1, 1, input_dim))
 
     def forward(self, x):
         """
@@ -79,7 +78,7 @@ class MambaBlock(torch.nn.Module):
         if self.norm is not None:
             x = self.norm(x)
         x = self.output_net(x)
-        return x + self.D * x
+        return x
 
     def _initialize_ssm_block(self, ssm_type, **kwargs):
         """

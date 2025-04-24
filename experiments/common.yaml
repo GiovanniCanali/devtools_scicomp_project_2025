@@ -1,13 +1,14 @@
 dataset:
-    sequence_len: 256
+    sequence_len: 128
     batch_size: 64
-    alphabet_size: 8
+    vocab_size: 10
     mem_tokens: 8
     selective: False
 
 trainer:
     steps: 400000
-    optimizer_class: torch.optim.Adam
+    test_steps: 100
+    optimizer_class: torch.optim.AdamW
     optimizer_params:
         lr: 0.0001
     device: "cuda"
@@ -15,5 +16,12 @@ trainer:
 metric_tracker:
     logging_steps: 100
     enable_progress_bar: False
-    patience: 40
-    repo: "/mnt/disk1/folivo/ssm"
+    patience: 100
+    repo: "/mnt/disk1/folivo/ssm/copy/"
+
+model:
+    n_layers: 2
+    dt_min: 0.001
+    dt_max: 0.1
+    model_dim: 64
+    hid_dim: 16

@@ -13,7 +13,7 @@ hid_dim = 10
 def test_h3_block_constructor(method, heads, init_method, discretisation):
 
     model = H3Block(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         heads=heads,
@@ -24,7 +24,7 @@ def test_h3_block_constructor(method, heads, init_method, discretisation):
     # Invalid method
     with pytest.raises(ValueError):
         H3Block(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             method="invalid_method",
             heads=heads,
@@ -35,7 +35,7 @@ def test_h3_block_constructor(method, heads, init_method, discretisation):
     # Invalid heads
     with pytest.raises(ValueError):
         H3Block(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             method=method,
             heads=3,
@@ -51,7 +51,7 @@ def test_h3_block_constructor(method, heads, init_method, discretisation):
 def test_h3_block_forward(method, heads, init_method, discretisation):
 
     model = H3Block(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         heads=heads,
@@ -70,7 +70,7 @@ def test_h3_block_forward(method, heads, init_method, discretisation):
 def test_h3_block_backward(method, heads, init_method, discretisation):
 
     model = H3Block(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         heads=heads,

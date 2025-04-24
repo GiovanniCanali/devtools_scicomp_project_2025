@@ -8,7 +8,7 @@ def test_constructor():
     CopyDataset(
         sequence_len=20,
         batch_size=32,
-        alphabet_size=10,
+        vocab_size=10,
         mem_tokens=10,
         marker=-1,
         selective=False,
@@ -23,7 +23,7 @@ def test_generate_data(selective, mem_tokens, sequence_len):
     dataset = CopyDataset(
         sequence_len=sequence_len,
         batch_size=32,
-        alphabet_size=5,
+        vocab_size=5,
         mem_tokens=mem_tokens,
         marker=-1,
         selective=selective,

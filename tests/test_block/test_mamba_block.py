@@ -15,7 +15,7 @@ def test_mamba_block_constructor(ssm_type, normalization, method):
         return
 
     model = MambaBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         expansion_factor=2,
         kernel_size=3,
         hid_dim=12,
@@ -27,7 +27,7 @@ def test_mamba_block_constructor(ssm_type, normalization, method):
     # Invalid ssm_type
     with pytest.raises(ValueError):
         MambaBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             expansion_factor=2,
             kernel_size=3,
             hid_dim=12,
@@ -47,7 +47,7 @@ def test_mamba_block_forward(normalization, ssm_type, method):
         return
 
     model = MambaBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         expansion_factor=2,
         kernel_size=3,
         hid_dim=12,
@@ -70,7 +70,7 @@ def test_mamba_block_backward(ssm_type, normalization, method):
         return
 
     model = MambaBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         expansion_factor=2,
         kernel_size=3,
         hid_dim=12,

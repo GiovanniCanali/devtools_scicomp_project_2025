@@ -18,6 +18,9 @@ class Trainer:
         test_steps=0,
         optimizer_class=torch.optim.Adam,
         optimizer_params={"lr": 1e-3},
+        scheduler_class=None,
+        scheduler_params=None,
+        model_summary=True,
     ):
         """
         Initialize the Trainer class.
@@ -32,19 +35,28 @@ class Trainer:
         :param int test_steps: The number of test steps.
         :param torch.optim.Optimizer optimizer_class: The optimizer class to use.
         :param dict optimizer_params: The parameters for the optimizer.
-        :param int patience: The number of epochs with no improvement after
-            which training will be stopped. Default is 0 (disabled).
+        :param torch.optim.lr_scheduler._LRScheduler scheduler_class: The
+            learning rate scheduler class to use.
+        :param dict scheduler_params: The parameters for the learning rate
+            scheduler.
+        :param bool model_summary: Whether to print the model summary.
         """
         self.dataset = iter(dataset)
-        n_classes = dataset.alphabet_size
-        self.model = EmbeddingBlock(model, n_classes, dataset.mem_tokens)
+        n_classes = dataset.vocab_size
+        self.model = model
         self.steps = steps
         self.metric_tracker = metric_tracker
+        self.metric_tracker.add_model(model)
         self.accumulation_steps = accumulation_steps
         self.test_steps = test_steps
         self.device = device if device else self.set_device()
         self.optimizer = optimizer_class(
             self.model.parameters(), **optimizer_params
+        )
+        self.scheduler = (
+            None
+            if scheduler_class is None
+            else scheduler_class(self.optimizer, **scheduler_params)
         )
         self.loss = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(task="multiclass", num_classes=n_classes)
@@ -90,6 +102,8 @@ class Trainer:
                 accumulated_loss = 0.0
                 if self.metric_tracker.stop_training:
                     break
+                if self.scheduler is not None:
+                    self.scheduler.step()
 
         self.metric_tracker.save_model(self.model)
 
@@ -97,6 +111,7 @@ class Trainer:
         """
         Test the model
         """
+        self.model = self.metric_tracker.load_model()
         self.move_to_device()
         self.model.eval()
         pbar = tqdm(
@@ -124,7 +139,6 @@ class Trainer:
         self.metric_tracker.log_on_tensorboard(
             "test/accuracy", accuracy / self.test_steps, self.test_steps
         )
-        self.metric_tracker.writer.close()
 
     def compute_metrics(self, output, y):
         """
@@ -187,7 +201,8 @@ class Trainer:
         num_params = self._count_parameters()
         print(f"Trainable parameters: {num_params['trainable']}")
         print(f"Non-trainable parameters: {num_params['non_trainable']}")
-        if self.metric_tracker is not None:
-            self.metric_tracker.write_model_summary(
-                num_params["trainable"], num_params["non_trainable"]
-            )
+        model_summary = str(self.model)
+        print(model_summary)
+        self.metric_tracker.write_model_summary(
+            num_params["trainable"], num_params["non_trainable"], model_summary
+        )

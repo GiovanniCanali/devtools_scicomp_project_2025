@@ -16,7 +16,7 @@ def test_s4_diagonal_block_constructor(
 ):
 
     model = S4DBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         initialization=init_method,
@@ -36,13 +36,13 @@ def test_s4_diagonal_block_constructor(
     # Invalid method
     with pytest.raises(ValueError):
         model = S4DBlock(
-            input_dim=x.shape[2], hid_dim=hid_dim, method="invalid_method"
+            model_dim=x.shape[2], hid_dim=hid_dim, method="invalid_method"
         )
 
     # Invalid initialization
     with pytest.raises(ValueError):
         model = S4DBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             method=method,
             initialization="inv_init",
@@ -51,7 +51,7 @@ def test_s4_diagonal_block_constructor(
     # Invalid discretization
     with pytest.raises(ValueError):
         model = S4DBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             method=method,
             discretization="inv_discr",
@@ -68,7 +68,7 @@ def test_s4_diagonal_block_forward(
 ):
 
     model = S4DBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         initialization=init_method,
@@ -91,7 +91,7 @@ def test_s4_diagonal_block_backward(
 ):
 
     model = S4DBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
         initialization=init_method,

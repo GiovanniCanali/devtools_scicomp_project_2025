@@ -43,7 +43,7 @@ class S4DBlock(S4BlockInterface):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         method,
         dt_max=0.1,
@@ -57,7 +57,7 @@ class S4DBlock(S4BlockInterface):
         """
         Initialization of the diagonal S4 block.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
@@ -83,20 +83,20 @@ class S4DBlock(S4BlockInterface):
             real_random=real_random,
             imag_random=imag_random,
         )
-        A = A.unsqueeze(0).repeat(input_dim, 1)
-        B = torch.rand(input_dim, hid_dim)
-        C = torch.rand(input_dim, hid_dim)
+        A = A.unsqueeze(0).repeat(model_dim, 1)
+        B = torch.rand(model_dim, hid_dim)
+        C = torch.rand(model_dim, hid_dim)
 
         # Initialize the time step dt
         dt = initialize_dt(
-            input_dim=input_dim,
+            dim=model_dim,
             dt_max=dt_max,
             dt_min=dt_min,
             inverse_softplus=False,
         )
 
         super().__init__(
-            input_dim=input_dim,
+            model_dim=model_dim,
             hid_dim=hid_dim,
             dt=dt,
             A=A,

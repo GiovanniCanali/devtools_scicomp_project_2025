@@ -1,16 +1,31 @@
+import pytest
 import shutil
 from ssm import TrainingCLI
 
 
-def test_contructor():
+@pytest.mark.parametrize(
+    "config_file",
+    [
+        "tests/experiments_test/cli_test.yaml",
+        "tests/experiments_test/cli_test_no_tensorboard.yaml",
+    ],
+)
+def test_contructor(config_file):
 
-    TrainingCLI("tests/experiments_test/cli_test.yaml")
-    shutil.rmtree("tests/logs/testing_logs")
+    TrainingCLI(config_file)
+    shutil.rmtree("tests/logs")
 
 
-def test_dataset():
+@pytest.mark.parametrize(
+    "config_file",
+    [
+        "tests/experiments_test/cli_test.yaml",
+        "tests/experiments_test/cli_test_no_tensorboard.yaml",
+    ],
+)
+def test_dataset(config_file):
 
-    cli = TrainingCLI("tests/experiments_test/cli_test.yaml")
+    cli = TrainingCLI(config_file)
     dataset = cli.trainer.dataset
     x, y = next(dataset)
 
@@ -23,21 +38,34 @@ def test_dataset():
     shutil.rmtree("tests/logs/testing_logs")
 
 
-def test_model():
+@pytest.mark.parametrize(
+    "config_file",
+    [
+        "tests/experiments_test/cli_test.yaml",
+        "tests/experiments_test/cli_test_no_tensorboard.yaml",
+    ],
+)
+def test_model(config_file):
 
-    cli = TrainingCLI("tests/experiments_test/cli_test.yaml")
+    cli = TrainingCLI(config_file)
     model = cli.trainer.model.model
 
-    assert model.input_dim == 5
-    assert model.layers[0].model[0].hid_dim == 16
-    assert model.layers[0].model[0].method == "convolutional"
+    assert model.layers[0].model[1].hid_dim == 16
+    assert model.layers[0].model[1].method == "convolutional"
 
     shutil.rmtree("tests/logs/testing_logs")
 
 
-def test_trainer():
+@pytest.mark.parametrize(
+    "config_file",
+    [
+        "tests/experiments_test/cli_test.yaml",
+        "tests/experiments_test/cli_test_no_tensorboard.yaml",
+    ],
+)
+def test_trainer(config_file):
 
-    cli = TrainingCLI("tests/experiments_test/cli_test.yaml")
+    cli = TrainingCLI(config_file)
     trainer = cli.trainer
 
     assert trainer.steps == 15
@@ -47,18 +75,32 @@ def test_trainer():
     shutil.rmtree("tests/logs/testing_logs")
 
 
-def test_fit():
+@pytest.mark.parametrize(
+    "config_file",
+    [
+        "tests/experiments_test/cli_test.yaml",
+        "tests/experiments_test/cli_test_no_tensorboard.yaml",
+    ],
+)
+def test_fit(config_file):
 
-    cli = TrainingCLI("tests/experiments_test/cli_test.yaml")
+    cli = TrainingCLI(config_file)
     trainer = cli.trainer
     trainer.fit()
 
     shutil.rmtree("tests/logs/testing_logs")
 
 
-def test_test():
+@pytest.mark.parametrize(
+    "config_file",
+    [
+        "tests/experiments_test/cli_test.yaml",
+        "tests/experiments_test/cli_test_no_tensorboard.yaml",
+    ],
+)
+def test_test(config_file):
 
-    cli = TrainingCLI("tests/experiments_test/cli_test.yaml")
+    cli = TrainingCLI(config_file)
     trainer = cli.trainer
     trainer.fit()
     trainer.test()

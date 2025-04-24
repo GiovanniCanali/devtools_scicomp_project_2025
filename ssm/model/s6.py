@@ -32,9 +32,8 @@ class S6(torch.nn.Module):
 
     def __init__(
         self,
-        input_dim,
-        hid_dim,
-        output_dim,
+        model_dim,
+        hid_dim=16,
         n_layers=2,
         activation=torch.nn.GELU,
         real_random=False,
@@ -45,9 +44,8 @@ class S6(torch.nn.Module):
         """
         Initialization of the S6 model.
 
-        :param int input_dim: The input dimension of the S6 block.
+        :param int model_dim: The input dimension of the S6 block.
         :param int hid_dim: The hidden dimension of the S6 block.
-        :param int output_dim: The output dimension.
         :param int n_layers: Number of S6 blocks. Default is 2.
         :param torch.nn.Module activation: The activation function.
             Default is `torch.nn.GELU`.
@@ -61,27 +59,25 @@ class S6(torch.nn.Module):
         :param dict kwargs: Additional keyword arguments used in the block.
         """
         super().__init__()
-        self.input_dim = input_dim
+        self.model_dim = model_dim
 
         # Initialize the layers
         layers = []
         for _ in range(n_layers):
             tmp = torch.nn.Sequential(
+                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
                 S6Block(
-                    input_dim=input_dim,
+                    model_dim=model_dim,
                     hid_dim=hid_dim,
                     real_random=real_random,
                     **kwargs,
                 ),
                 activation(),
-                MixingBlock(input_dim),
-                *([torch.nn.LayerNorm(input_dim)] if layer_norm else []),
+                MixingBlock(model_dim),
+                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
             )
             layers.append(tmp if not residual else ResidualBlock(tmp))
         self.layers = torch.nn.Sequential(*layers)
-
-        # Initialize the decoder to match the output dimension
-        self.decoder = torch.nn.Linear(input_dim, output_dim)
 
     def forward(self, x):
         """
@@ -91,5 +87,4 @@ class S6(torch.nn.Module):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        y = self.layers(x)
-        return self.decoder(y)
+        return self.layers(x)

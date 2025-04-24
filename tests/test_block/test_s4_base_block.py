@@ -11,7 +11,7 @@ hid_dim = 10
 def test_s4_base_block_constructor(method, hippo):
 
     model = S4BaseBlock(
-        input_dim=x.shape[2], hid_dim=hid_dim, method=method, hippo=hippo
+        model_dim=x.shape[2], hid_dim=hid_dim, method=method, hippo=hippo
     )
 
     assert model.A.shape == (x.shape[2], hid_dim, hid_dim)
@@ -25,7 +25,7 @@ def test_s4_base_block_constructor(method, hippo):
     # Invalid method
     with pytest.raises(ValueError):
         model = S4BaseBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             hippo=hippo,
             method="invalid_method",
@@ -37,7 +37,7 @@ def test_s4_base_block_constructor(method, hippo):
 def test_s4_base_block_forward(hippo, method):
 
     model = S4BaseBlock(
-        input_dim=x.shape[2], hid_dim=hid_dim, method=method, hippo=hippo
+        model_dim=x.shape[2], hid_dim=hid_dim, method=method, hippo=hippo
     )
 
     y = model.forward(x)
@@ -49,7 +49,7 @@ def test_s4_base_block_forward(hippo, method):
 def test_s4_base_block_backward(hippo, method):
 
     model = S4BaseBlock(
-        input_dim=x.shape[2], hid_dim=hid_dim, method=method, hippo=hippo
+        model_dim=x.shape[2], hid_dim=hid_dim, method=method, hippo=hippo
     )
 
     y = model.forward(x.requires_grad_())

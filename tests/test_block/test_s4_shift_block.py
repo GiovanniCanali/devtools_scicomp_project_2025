@@ -10,7 +10,7 @@ hid_dim = 10
 def test_s4_shift_block_constructor(method):
 
     model = S4ShiftBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
     )
@@ -20,7 +20,7 @@ def test_s4_shift_block_constructor(method):
     # Invalid method
     with pytest.raises(ValueError):
         model = S4ShiftBlock(
-            input_dim=x.shape[2], hid_dim=hid_dim, method="invalid_method"
+            model_dim=x.shape[2], hid_dim=hid_dim, method="invalid_method"
         )
 
 
@@ -28,7 +28,7 @@ def test_s4_shift_block_constructor(method):
 def test_s4_shift_block_forward(method):
 
     model = S4ShiftBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
     )
@@ -41,7 +41,7 @@ def test_s4_shift_block_forward(method):
 def test_s4_shift_block_backward(method):
 
     model = S4ShiftBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         method=method,
     )

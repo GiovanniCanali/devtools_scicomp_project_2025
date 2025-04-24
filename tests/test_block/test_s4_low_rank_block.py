@@ -10,7 +10,7 @@ hid_dim = 10
 def test_s4_low_rank_block_constructor(hippo):
 
     model = S4LowRankBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         hippo=hippo,
         method="convolutional",
@@ -23,7 +23,7 @@ def test_s4_low_rank_block_constructor(hippo):
     # Check that "recurrent" method is not allowed
     with pytest.raises(ValueError):
         model = S4LowRankBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             hippo=hippo,
             method="recurrent",
@@ -32,7 +32,7 @@ def test_s4_low_rank_block_constructor(hippo):
     # Invalid method
     with pytest.raises(ValueError):
         model = S4LowRankBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             hippo=hippo,
             method="invalid_method",
@@ -43,7 +43,7 @@ def test_s4_low_rank_block_constructor(hippo):
 def test_s4_low_rank_block_forward(hippo):
 
     model = S4LowRankBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         hippo=hippo,
         method="convolutional",
@@ -57,7 +57,7 @@ def test_s4_low_rank_block_forward(hippo):
 def test_s4_low_rank_block_backward(hippo):
 
     model = S4LowRankBlock(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         hippo=hippo,
         method="convolutional",

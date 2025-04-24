@@ -7,7 +7,7 @@ hid_dim = 10
 
 def test_s6_block_constructor():
 
-    model = S6Block(input_dim=x.shape[2], hid_dim=hid_dim)
+    model = S6Block(model_dim=x.shape[2], hid_dim=hid_dim)
 
     assert model.A.shape == (1, 1, x.shape[2], hid_dim)
     assert hasattr(model, "linear")
@@ -16,7 +16,7 @@ def test_s6_block_constructor():
 
 def test_s6_block_forward():
 
-    model = S6Block(input_dim=x.shape[2], hid_dim=hid_dim)
+    model = S6Block(model_dim=x.shape[2], hid_dim=hid_dim)
     y = model.forward(x)
 
     assert y.shape == x.shape
@@ -24,7 +24,7 @@ def test_s6_block_forward():
 
 def test_s6_block_backward():
 
-    model = S6Block(input_dim=x.shape[2], hid_dim=hid_dim)
+    model = S6Block(model_dim=x.shape[2], hid_dim=hid_dim)
     y = model.forward(x.requires_grad_())
     _ = torch.mean(y).backward()
 

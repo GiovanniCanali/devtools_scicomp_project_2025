@@ -1,19 +1,10 @@
 model:
   model: ssm.model.Mamba
   expansion_factor: 2
-  kernel_size: 7
+  kernel_size: 4
   normalization: True
   ssm_type: "S6"
-  dt_min: 0.001
-  dt_max: 0.1
-  input_dim: 8
-  hid_dim: 64
-  output_dim: 8
-  n_layers: 2
-  
-
 
 metric_tracker:
     experiment: "mamba_s6"
-
   

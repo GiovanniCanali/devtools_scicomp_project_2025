@@ -27,7 +27,7 @@ class H3(torch.nn.Module):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         method,
         heads,
@@ -44,7 +44,7 @@ class H3(torch.nn.Module):
         """
         Initialization of the H3 model.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
@@ -77,7 +77,7 @@ class H3(torch.nn.Module):
         for _ in range(n_layers):
             layers.append(
                 H3Block(
-                    input_dim=input_dim,
+                    model_dim=model_dim,
                     hid_dim=hid_dim,
                     method=method,
                     heads=heads,
@@ -90,10 +90,10 @@ class H3(torch.nn.Module):
                 )
             )
             layers.append(activation())
-            layers.append(torch.nn.Linear(input_dim, input_dim))
+            layers.append(torch.nn.Linear(model_dim, model_dim))
             if normalization:
                 layers.append(
-                    torch.nn.LayerNorm(input_dim, elementwise_affine=False)
+                    torch.nn.LayerNorm(model_dim, elementwise_affine=False)
                 )
 
         self.layers = torch.nn.Sequential(*layers)

@@ -32,7 +32,7 @@ class S4BaseBlock(S4BlockInterface):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         method,
         dt_min=0.001,
@@ -43,7 +43,7 @@ class S4BaseBlock(S4BlockInterface):
         """
         Initialization of the basic S4 block.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
@@ -57,16 +57,16 @@ class S4BaseBlock(S4BlockInterface):
         """
         # Initialize matrices A, B, and C
         if hippo:
-            A = compute_hippo(hid_dim).repeat(input_dim, 1, 1)
+            A = compute_hippo(hid_dim).repeat(model_dim, 1, 1)
         else:
-            A = torch.rand(input_dim, hid_dim, hid_dim)
-        B = torch.rand(input_dim, hid_dim, 1)
-        C = torch.rand(input_dim, 1, hid_dim)
+            A = torch.rand(model_dim, hid_dim, hid_dim)
+        B = torch.rand(model_dim, hid_dim, 1)
+        C = torch.rand(model_dim, 1, hid_dim)
 
         # Initialize the time step dt
         dt = (
             initialize_dt(
-                input_dim=input_dim,
+                dim=model_dim,
                 dt_min=dt_min,
                 dt_max=dt_max,
                 inverse_softplus=False,
@@ -76,7 +76,7 @@ class S4BaseBlock(S4BlockInterface):
         )
 
         super().__init__(
-            input_dim=input_dim,
+            model_dim=model_dim,
             hid_dim=hid_dim,
             dt=dt,
             A=A,
@@ -86,7 +86,8 @@ class S4BaseBlock(S4BlockInterface):
         )
 
         self.register_buffer(
-            "I", torch.eye(hid_dim).unsqueeze(0).expand(input_dim, -1, -1)
+            "I",
+            torch.eye(hid_dim).unsqueeze(0).expand(model_dim, -1, -1).clone(),
         )
 
     def _compute_K(self, L):
@@ -99,14 +100,14 @@ class S4BaseBlock(S4BlockInterface):
         :rtype: torch.Tensor
         """
         A_bar, B_bar = self._discretize()
-        # Create kernel tensor: [input_dim, L]
-        K = torch.zeros(self.input_dim, L, device=self.A.device)
+        # Create kernel tensor: [model_dim, L]
+        K = torch.zeros(self.model_dim, L, device=self.A.device)
 
         # Initialize A^0 for all channels (identity matrices)
         A_pow = self.I.clone()
 
         for i in range(L):
-            # Compute C·A^i·B for all channels. Shape: [input_dim, 1, 1]
+            # Compute C·A^i·B for all channels. Shape: [model_dim, 1, 1]
             CAB = torch.bmm(torch.bmm(self.C, A_pow), B_bar)
 
             # Squeeze to get scalar value per channel

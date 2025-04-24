@@ -134,7 +134,7 @@ def compute_dplr(A):
     return Lambda, p, q
 
 
-def initialize_dt(input_dim, dt_min, dt_max, inverse_softplus=False):
+def initialize_dt(dim, dt_min, dt_max, inverse_softplus=False):
     """
     Initialize the time step dt for the S4 and S6 blocks.
 
@@ -146,7 +146,7 @@ def initialize_dt(input_dim, dt_min, dt_max, inverse_softplus=False):
 
     # Sample dt from a uniform distribution on [dt_min, dt_max]
     dt = torch.exp(
-        torch.rand(input_dim) * (math.log(dt_max) - math.log(dt_min))
+        torch.rand(dim) * (math.log(dt_max) - math.log(dt_min))
         + math.log(dt_min)
     ).clamp(min=1e-4)
 

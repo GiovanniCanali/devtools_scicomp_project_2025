@@ -17,7 +17,7 @@ def test_mamba_constructor(n_layers, ssm_type, normalization, method):
 
     model = Mamba(
         n_layers=n_layers,
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         expansion_factor=2,
         hid_dim=12,
         kernel_size=3,
@@ -26,7 +26,7 @@ def test_mamba_constructor(n_layers, ssm_type, normalization, method):
         method=method,
     )
 
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         Mamba(n_layers=1)
 
 
@@ -41,7 +41,7 @@ def test_mamba_forward(normalization, ssm_type, method):
 
     model = Mamba(
         n_layers=1,
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         expansion_factor=2,
         hid_dim=12,
         kernel_size=3,
@@ -65,7 +65,7 @@ def test_mamba_backward(ssm_type, normalization, method):
 
     model = Mamba(
         n_layers=1,
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         expansion_factor=2,
         hid_dim=12,
         kernel_size=3,

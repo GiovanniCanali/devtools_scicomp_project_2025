@@ -13,7 +13,7 @@ class CopyDataset(IterableDataset):
         self,
         sequence_len,
         mem_tokens,
-        alphabet_size,
+        vocab_size,
         selective=True,
         marker=-1,
         batch_size=64,
@@ -23,7 +23,7 @@ class CopyDataset(IterableDataset):
 
         :param int sequence_len: Length of the input sequence.
         :param int mem_tokens: Number of tokens to be copied.
-        :param int alphabet_size: Size of the alphabet (number of unique tokens).
+        :param int vocab_size: Size of the alphabet (number of unique tokens).
         :param bool selective: whether to use selective copy, defaults to True
         :param int marker: Marker token to indicate the start of the copy,
             defaults to -1.
@@ -33,7 +33,7 @@ class CopyDataset(IterableDataset):
         super().__init__()
         self.sequence_len = sequence_len
         self.mem_tokens = mem_tokens
-        self.alphabet_size = alphabet_size
+        self.vocab_size = vocab_size
         self.selective = selective
         self.marker = marker
         self.batch_size = batch_size
@@ -65,7 +65,7 @@ class CopyDataset(IterableDataset):
         N = self.batch_size
         tokens = torch.randint(
             low=1,
-            high=self.alphabet_size - 1,
+            high=self.vocab_size - 1,
             size=(
                 N,
                 self.mem_tokens,
@@ -103,7 +103,7 @@ class CopyDataset(IterableDataset):
             dtype=torch.long,
         )
         zeros_x.scatter_(-1, inds, tokens)
-        markers = (self.alphabet_size - 1) * torch.ones(
+        markers = (self.vocab_size - 1) * torch.ones(
             (
                 N,
                 self.mem_tokens,

@@ -51,11 +51,11 @@ class S4BlockInterface(torch.nn.Module, ABC):
             raise ValueError(f"Unknown method: {method}")
         return instance
 
-    def __init__(self, input_dim, hid_dim, dt, A, B, C, method):
+    def __init__(self, model_dim, hid_dim, dt, A, B, C, method):
         """
         Initialization of the S4 block interface.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param float dt: The time step for discretization.
         :param torch.Tensor A: The hidden-to-hidden matrix.
@@ -68,7 +68,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         super().__init__()
 
         # Initialize parameters
-        self.input_dim = input_dim
+        self.model_dim = model_dim
         self.hid_dim = hid_dim
 
         # Check method
@@ -81,7 +81,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
             torch.nn.Parameter(A),
             torch.nn.Parameter(B),
             torch.nn.Parameter(C),
-            torch.nn.Parameter(torch.rand(1, 1, input_dim)),
+            torch.nn.Parameter(torch.rand(1, 1, model_dim)),
             torch.nn.Parameter(dt),
         )
 
@@ -99,10 +99,10 @@ class S4BlockInterface(torch.nn.Module, ABC):
         B, L = x.shape[0], x.shape[1]
 
         # Initialize the output tensor
-        y = torch.empty(B, L, self.input_dim, device=x.device)
+        y = torch.empty(B, L, self.model_dim, device=x.device)
 
         # Initialize initial hidden state
-        h = torch.zeros(B, self.input_dim, self.hid_dim, device=x.device)
+        h = torch.zeros(B, self.model_dim, self.hid_dim, device=x.device)
 
         A_bar, B_bar, C = self._preprocess(A_bar=A_bar, B_bar=B_bar, C=self.C)
 

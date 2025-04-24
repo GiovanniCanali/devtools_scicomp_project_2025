@@ -12,7 +12,7 @@ hid_dim = 10
 def test_gated_mlp_constructor(activation, beta, n_layers):
 
     model = GatedMLP(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         n_layers=n_layers,
         activation=activation,
@@ -24,7 +24,7 @@ def test_gated_mlp_constructor(activation, beta, n_layers):
     # Invalid activation
     with pytest.raises(ValueError):
         GatedMLP(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             n_layers=n_layers,
             activation="invalid_activation",
@@ -33,7 +33,7 @@ def test_gated_mlp_constructor(activation, beta, n_layers):
     # Invalid beta
     with pytest.raises(ValueError):
         GatedMLP(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             n_layers=n_layers,
             activation="swish",
@@ -47,7 +47,7 @@ def test_gated_mlp_constructor(activation, beta, n_layers):
 def test_gated_mlp_forward(activation, beta, n_layers):
 
     model = GatedMLP(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         n_layers=n_layers,
         activation=activation,
@@ -64,7 +64,7 @@ def test_gated_mlp_forward(activation, beta, n_layers):
 def test_gated_mlp_backward(activation, beta, n_layers):
 
     model = GatedMLP(
-        input_dim=x.shape[2],
+        model_dim=x.shape[2],
         hid_dim=hid_dim,
         n_layers=n_layers,
         activation=activation,

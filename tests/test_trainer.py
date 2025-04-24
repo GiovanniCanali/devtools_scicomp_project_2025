@@ -5,32 +5,32 @@ from ssm import Trainer
 from ssm.model import S4, S6, Mamba
 from ssm import CopyDataset
 from ssm import MetricTracker
+from ssm.model.block.embedding_block import EmbeddingBlock
 
-input_dim = 10
+model_dim = 20
 hid_dim = 12
 output_dim = 5
+vocab_size = 5
+mem_tokens = 10
 
 S4_model = S4(
     block_type="S4",
     method="convolutional",
-    input_dim=input_dim,
+    model_dim=model_dim,
     hid_dim=hid_dim,
-    output_dim=output_dim,
     n_layers=2,
     hippo=True,
 )
 
 S6_model = S6(
-    input_dim=input_dim,
+    model_dim=model_dim,
     hid_dim=hid_dim,
-    output_dim=output_dim,
     n_layers=2,
 )
 
 Mamba_model = Mamba(
-    input_dim=input_dim,
+    model_dim=model_dim,
     hid_dim=hid_dim,
-    output_dim=output_dim,
     n_layers=1,
     expansion_factor=2,
     kernel_size=3,
@@ -41,16 +41,24 @@ Mamba_model = Mamba(
 dataset = CopyDataset(
     sequence_len=50,
     batch_size=12,
-    alphabet_size=5,
-    mem_tokens=10,
-    marker=-1,
+    vocab_size=vocab_size,
+    mem_tokens=mem_tokens,
     selective=False,
+)
+
+embedded_model = EmbeddingBlock(
+    model=S4_model,
+    model_dim=model_dim,
+    vocab_size=vocab_size,
+    out_dim=output_dim,
+    mem_tokens=10,
 )
 
 
 @pytest.mark.parametrize("model", [S4_model, S6_model, Mamba_model])
 def test_constructor(model):
 
+    embedded_model.model = model
     metric_tracker = MetricTracker(
         repo="tests/",
         experiment="logs",
@@ -59,7 +67,7 @@ def test_constructor(model):
     )
 
     Trainer(
-        model=model,
+        model=embedded_model,
         steps=100,
         test_steps=10,
         dataset=dataset,
@@ -70,6 +78,7 @@ def test_constructor(model):
 
 @pytest.mark.parametrize("model", [S4_model, Mamba_model])
 def test_fit(model):
+    embedded_model.model = model
     metric_tracker = MetricTracker(
         repo="tests/",
         experiment="logs",
@@ -78,7 +87,7 @@ def test_fit(model):
     )
 
     trainer = Trainer(
-        model=model,
+        model=embedded_model,
         dataset=dataset,
         steps=2,
         test_steps=10,
@@ -93,6 +102,7 @@ def test_fit(model):
 @pytest.mark.parametrize("tensorboard_logger", [True, False])
 def test_tensorboard_logging(tensorboard_logger):
 
+    embedded_model.model = S4_model
     metric_tracker = MetricTracker(
         repo="tests/",
         experiment="logs",
@@ -101,7 +111,7 @@ def test_tensorboard_logging(tensorboard_logger):
     )
 
     trainer = Trainer(
-        model=S4_model,
+        model=embedded_model,
         dataset=dataset,
         steps=2,
         test_steps=10,
@@ -115,7 +125,7 @@ def test_tensorboard_logging(tensorboard_logger):
 
 
 def test_custom_optimizer():
-
+    embedded_model.model = S4_model
     metric_tracker = MetricTracker(
         repo="tests/",
         experiment="logs",
@@ -124,7 +134,7 @@ def test_custom_optimizer():
     )
 
     trainer = Trainer(
-        model=S4_model,
+        model=embedded_model,
         dataset=dataset,
         steps=2,
         metric_tracker=metric_tracker,
@@ -155,7 +165,7 @@ def test_custom_optimizer():
 
 @pytest.mark.parametrize("model", [S4_model, Mamba_model])
 def test_test(model):
-
+    embedded_model.model = model
     metric_tracker = MetricTracker(
         repo="tests/",
         experiment="logs",
@@ -164,7 +174,7 @@ def test_test(model):
     )
 
     trainer = Trainer(
-        model=model,
+        model=embedded_model,
         dataset=dataset,
         steps=2,
         metric_tracker=metric_tracker,
@@ -178,7 +188,7 @@ def test_test(model):
 
 
 def test_accumulation_steps():
-
+    embedded_model.model = S4_model
     metric_tracker = MetricTracker(
         repo="tests/",
         experiment="logs",
@@ -187,7 +197,7 @@ def test_accumulation_steps():
     )
 
     trainer = Trainer(
-        model=S4_model,
+        model=embedded_model,
         dataset=dataset,
         steps=2,
         test_steps=10,

@@ -6,6 +6,7 @@ from copy import deepcopy
 from .dataset import CopyDataset
 from .trainer import Trainer
 from .metric_tracker import MetricTracker
+from .model.block.embedding_block import EmbeddingBlock
 
 
 class TrainingCLI:
@@ -28,17 +29,28 @@ class TrainingCLI:
         :param str config_file: Path to the configuration file.
 
         """
+        # Parse command line arguments
         self.args = self.argparsing()[0]
+        # If no config file is provided, use the one from command line
         if config_file is None:
             config_file = self.args.config_file
+
+        # Load the configuration file
         config = self.load_config(config_file)
-        model = self.init_model(deepcopy(config["model"]))
+        # Initialize the dataset
         dataset = CopyDataset(**deepcopy(config["dataset"]))
+        # Initialize dataset
+        model = self.init_model(
+            deepcopy(config["model"]), dataset.vocab_size, dataset.mem_tokens
+        )
+        # Initialize the metric tracker (logger + early stopping)
         metric_tracker = MetricTracker(**deepcopy(config["metric_tracker"]))
+        # Set up trainer
         trainer_config = deepcopy(config["trainer"])
         trainer_config["dataset"] = dataset
         trainer_config["metric_tracker"] = metric_tracker
         self.trainer = self.init_trainer(trainer_config, model, dataset)
+        # Write configuration on TensorBoard (if applicable)
         self.write_on_tensorboard(config)
 
     def load_config(self, config_file):
@@ -48,7 +60,6 @@ class TrainingCLI:
         :return: Configuration dictionary.
         :rtype: dict
         """
-
         path = "/".join(config_file.split("/")[:-1]) + "/common.yaml"
         if os.path.exists(path):
             with open(path, "r") as f:
@@ -76,7 +87,7 @@ class TrainingCLI:
         return config
 
     @staticmethod
-    def init_model(model_config):
+    def init_model(model_config, n_classes, mem_tokens):
         """
         Load the model from the configuration.
         :param dict model_config: Model configuration dictionary.
@@ -90,7 +101,16 @@ class TrainingCLI:
                 module_name, class_name = v.rsplit(".", 1)
                 module = importlib.import_module(module_name)
                 model_config[k] = getattr(module, class_name)
-        return model_config.pop("model")(**model_config)
+        if not "output_dim" in model_config:
+            model_config["output_dim"] = n_classes
+        model_class = model_config.pop("model")
+        model = model_class(**model_config)
+        return EmbeddingBlock(
+            model=model,
+            vocab_size=n_classes,
+            model_dim=model_config["model_dim"],
+            mem_tokens=mem_tokens,
+        )
 
     @staticmethod
     def init_trainer(trainer_config, model, dataset):
@@ -111,6 +131,12 @@ class TrainingCLI:
             module = importlib.import_module(module_name)
             optimizer_class = getattr(module, class_name)
             trainer_config["optimizer_class"] = optimizer_class
+        if "scheduler_class" in trainer_config:
+            optimizer_class = trainer_config.pop("scheduler_class")
+            module_name, class_name = optimizer_class.rsplit(".", 1)
+            module = importlib.import_module(module_name)
+            optimizer_class = getattr(module, class_name)
+            trainer_config["scheduler_class"] = optimizer_class
         return Trainer(**trainer_config)
 
     @staticmethod
@@ -169,10 +195,11 @@ class TrainingCLI:
         Write the configuration on TensorBoard.
         :param dict config: Configuration dictionary.
         """
-        if hasattr(self.trainer, "writer"):
+        if self.trainer.metric_tracker.writer is not None:
+            writer = self.trainer.metric_tracker.writer
             config_str = yaml.dump(config)
-            self.trainer.writer.add_text("config", config_str, global_step=0)
-            self.trainer.writer.flush()
+            writer.add_text("config", config_str, global_step=0)
+            writer.flush()
 
     def initialize_logger(self, config):
         """

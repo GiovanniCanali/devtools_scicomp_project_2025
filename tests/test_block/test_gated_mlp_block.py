@@ -11,13 +11,13 @@ hid_dim = 10
 def test_gated_mlp_block_constructor(activation, beta):
 
     model = GatedMLPBlock(
-        input_dim=x.shape[2], hid_dim=hid_dim, activation=activation, beta=beta
+        model_dim=x.shape[2], hid_dim=hid_dim, activation=activation, beta=beta
     )
 
     # Invalid activation
     with pytest.raises(ValueError):
         GatedMLPBlock(
-            input_dim=x.shape[2],
+            model_dim=x.shape[2],
             hid_dim=hid_dim,
             activation="invalid_activation",
         )
@@ -25,7 +25,7 @@ def test_gated_mlp_block_constructor(activation, beta):
     # Invalid beta
     with pytest.raises(ValueError):
         GatedMLPBlock(
-            input_dim=x.shape[2], hid_dim=hid_dim, activation="swish", beta=-1.0
+            model_dim=x.shape[2], hid_dim=hid_dim, activation="swish", beta=-1.0
         )
 
 
@@ -34,7 +34,7 @@ def test_gated_mlp_block_constructor(activation, beta):
 def test_gated_mlp_block_forward(activation, beta):
 
     model = GatedMLPBlock(
-        input_dim=x.shape[2], hid_dim=hid_dim, activation=activation, beta=beta
+        model_dim=x.shape[2], hid_dim=hid_dim, activation=activation, beta=beta
     )
 
     y = model.forward(x)
@@ -46,7 +46,7 @@ def test_gated_mlp_block_forward(activation, beta):
 def test_gated_mlp_block_backward(activation, beta):
 
     model = GatedMLPBlock(
-        input_dim=x.shape[2], hid_dim=hid_dim, activation=activation, beta=beta
+        model_dim=x.shape[2], hid_dim=hid_dim, activation=activation, beta=beta
     )
 
     y = model.forward(x.requires_grad_())

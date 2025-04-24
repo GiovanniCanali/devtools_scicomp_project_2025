@@ -43,7 +43,7 @@ class MetricTracker:
             None if not tensorboard_logger else self.initialize_tensorboard()
         )
         self.pbar = None
-        self.early_stopping = EarlyStopping(patience)
+        self.early_stopping = EarlyStopping(patience, self.logging_dir)
 
     def initialize_tensorboard(self):
         """
@@ -82,13 +82,13 @@ class MetricTracker:
                 log_accuracy,
                 self.steps,
             )
-            self.writer.flush()
             self.pbar.set_postfix(
                 loss=log_loss,
                 accuracy=log_accuracy,
             )
             self.initialize()
-            self.early_stopping(log_loss)
+            if self.early_stopping(log_loss):
+                self.save_model(self.model)
 
     @staticmethod
     def logging_folder(repo, experiment):
@@ -125,7 +125,7 @@ class MetricTracker:
         return folder
 
     def write_model_summary(
-        self, trainable_parameters, non_trainable_parameters
+        self, trainable_parameters, non_trainable_parameters, model
     ):
         """
         Write the model summary to TensorBoard.
@@ -138,6 +138,7 @@ class MetricTracker:
             self.writer.add_text(
                 "non_trainable_parameters", str(non_trainable_parameters), 0
             )
+            self.writer.add_text("model_summary", model, 0)
             self.writer.flush()
 
     def log_on_tensorboard(self, name, value, step):
@@ -165,8 +166,22 @@ class MetricTracker:
         :param str path: The path to save the model.
         """
         torch.save(
-            model.state_dict(), os.path.join(self.logging_dir, "model.pth")
+            model.state_dict(), os.path.join(self.logging_dir, "best_model.pth")
         )
+
+    def load_model(self):
+        """
+        Load the model from a file.
+        :param torch.nn.Module model: The model to load.
+        :param str path: The path to load the model.
+        """
+        model_path = os.path.join(self.logging_dir, "best_model.pth")
+        if os.path.exists(model_path):
+            self.model.to("cpu")
+            self.model.load_state_dict(
+                torch.load(model_path, map_location="cpu")
+            )
+        return self.model
 
     @property
     def stop_training(self):
@@ -175,3 +190,10 @@ class MetricTracker:
         :param torch.nn.Module model: The model to save.
         """
         return self.early_stopping.early_stop
+
+    def add_model(self, model):
+        """
+        Add the model to the logger.
+        :param torch.nn.Module model: The model to add.
+        """
+        self.model = model

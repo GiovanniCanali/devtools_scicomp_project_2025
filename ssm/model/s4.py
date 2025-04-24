@@ -35,9 +35,8 @@ class S4(torch.nn.Module):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
-        output_dim,
         method,
         n_layers=2,
         block_type="S4",
@@ -49,9 +48,8 @@ class S4(torch.nn.Module):
         """
         Initialization of the S4 model.
 
-        :param int input_dim: The input dimension of the S4 block.
+        :param int model_dim: The input dimension of the S4 block.
         :param int hid_dim: The hidden dimension of the S4 block.
-        :param int output_dim: The output dimension.
         :param str method: The forward computation method for each S4 block.
             Available options are: `"recurrent"`, `"convolutional"`.
         :param int n_layers: Number of S4 blocks. Default is 2.
@@ -67,7 +65,7 @@ class S4(torch.nn.Module):
         :raises ValueError: If the specified `block_type` is not valid.
         """
         super().__init__()
-        self.input_dim = input_dim
+        self.model_dim = model_dim
         # Initialize parameters
         self.block_type = block_type
 
@@ -87,23 +85,21 @@ class S4(torch.nn.Module):
         layers = []
         for _ in range(n_layers):
             tmp = torch.nn.Sequential(
+                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
                 block_class(
-                    input_dim=input_dim,
+                    model_dim=model_dim,
                     hid_dim=hid_dim,
                     method=method,
                     **kwargs,
                 ),
                 activation(),
                 # Mixing layer
-                MixingBlock(input_dim),
+                MixingBlock(model_dim),
                 # Conditionally add layer normalization
-                *([torch.nn.LayerNorm(input_dim)] if layer_norm else []),
+                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
             )
             layers.append(tmp if not residual else ResidualBlock(tmp))
         self.layers = torch.nn.Sequential(*layers)
-
-        # Initialize the decoder to match the output dimension
-        self.decoder = torch.nn.Linear(input_dim, output_dim)
 
     def forward(self, x):
         """
@@ -113,8 +109,7 @@ class S4(torch.nn.Module):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        y = self.layers(x)
-        return self.decoder(y)
+        return self.layers(x)
 
     def change_forward(self, method):
         """

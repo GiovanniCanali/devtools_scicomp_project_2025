@@ -20,7 +20,7 @@ class H3Block(torch.nn.Module):
 
     def __init__(
         self,
-        input_dim,
+        model_dim,
         hid_dim,
         method,
         heads,
@@ -34,7 +34,7 @@ class H3Block(torch.nn.Module):
         """
         Initialization of the H3 block.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden state dimension.
         :param str method: The forward computation method. Available options
             are: recurrent, convolutional.
@@ -60,16 +60,16 @@ class H3Block(torch.nn.Module):
         super().__init__()
 
         # Initialize number of heads
-        if input_dim % heads != 0:
+        if model_dim % heads != 0:
             raise ValueError(
                 "The number of heads must be a divisor of the input dimension."
             )
         self.heads = heads
-        self.dh = input_dim // heads
+        self.dh = model_dim // heads
 
         # Initialize the shift S4 block
         self.shift_block = S4ShiftBlock(
-            input_dim=input_dim,
+            model_dim=model_dim,
             hid_dim=hid_dim,
             method=method,
             dt=dt,
@@ -78,7 +78,7 @@ class H3Block(torch.nn.Module):
 
         # Initialize the diagonal S4 block
         self.diagonal_block = S4DBlock(
-            input_dim=input_dim * self.dh,
+            model_dim=model_dim * self.dh,
             hid_dim=hid_dim,
             method=method,
             dt=dt,
@@ -90,10 +90,10 @@ class H3Block(torch.nn.Module):
         )
 
         # Initialize the weight matrixes
-        self.linear_Q = torch.nn.Linear(input_dim, input_dim, bias=False)
-        self.linear_K = torch.nn.Linear(input_dim, input_dim, bias=False)
-        self.linear_V = torch.nn.Linear(input_dim, input_dim, bias=False)
-        self.linear_O = torch.nn.Linear(input_dim, input_dim, bias=False)
+        self.linear_Q = torch.nn.Linear(model_dim, model_dim, bias=False)
+        self.linear_K = torch.nn.Linear(model_dim, model_dim, bias=False)
+        self.linear_V = torch.nn.Linear(model_dim, model_dim, bias=False)
+        self.linear_O = torch.nn.Linear(model_dim, model_dim, bias=False)
 
     def forward(self, x):
         """

@@ -10,11 +10,11 @@ class GatedMLP(torch.nn.Module):
     two linear layers with a non-linear activation function.
     """
 
-    def __init__(self, input_dim, hid_dim, n_layers, activation, beta=1.0):
+    def __init__(self, model_dim, hid_dim, n_layers, activation, beta=1.0):
         """
         Initialization of the Gated MLP model.
 
-        :param int input_dim: The input dimension.
+        :param int model_dim: The input dimension.
         :param int hid_dim: The hidden dimension.
         :param int n_layers: The number of Gated MLP blocks in the stack.
         :param str activation: The activation function to use. Available options
@@ -25,7 +25,7 @@ class GatedMLP(torch.nn.Module):
 
         gated_mlp_blocks = [
             GatedMLPBlock(
-                input_dim=input_dim,
+                model_dim=model_dim,
                 hid_dim=hid_dim,
                 activation=activation,
                 beta=beta,
