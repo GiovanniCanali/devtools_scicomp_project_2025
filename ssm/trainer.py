@@ -199,10 +199,7 @@ class Trainer:
         the architecture.
         """
         num_params = self._count_parameters()
-        print(f"Trainable parameters: {num_params['trainable']}")
-        print(f"Non-trainable parameters: {num_params['non_trainable']}")
         model_summary = str(self.model)
-        print(model_summary)
         self.metric_tracker.write_model_summary(
             num_params["trainable"], num_params["non_trainable"], model_summary
         )

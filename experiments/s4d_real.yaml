@@ -12,7 +12,3 @@ model:
 metric_tracker:
     experiment: "s4d_real"
 
-trainer:
-  optimizer_params:
-    lr: 0.001
-

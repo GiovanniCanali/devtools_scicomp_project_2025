@@ -7,6 +7,7 @@ from .dataset import CopyDataset
 from .trainer import Trainer
 from .metric_tracker import MetricTracker
 from .model.block.embedding_block import EmbeddingBlock
+from .utils import set_seed
 
 
 class TrainingCLI:
@@ -34,9 +35,12 @@ class TrainingCLI:
         # If no config file is provided, use the one from command line
         if config_file is None:
             config_file = self.args.config_file
-
         # Load the configuration file
         config = self.load_config(config_file)
+
+        if "seed" in config:
+            set_seed(config["seed"])
+
         # Initialize the dataset
         dataset = CopyDataset(**deepcopy(config["dataset"]))
         # Initialize dataset

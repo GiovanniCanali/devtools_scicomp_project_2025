@@ -1,5 +1,7 @@
 import math
 import torch
+import random
+import numpy as np
 
 
 def compute_hippo(N):
@@ -154,3 +156,18 @@ def initialize_dt(dim, dt_min, dt_max, inverse_softplus=False):
     dt = dt + torch.log(-torch.expm1(-dt)) if inverse_softplus else dt
 
     return dt
+
+
+def set_seed(seed):
+    """
+    Set the random seed for reproducibility.
+    :param int seed: The seed value to set.
+    """
+    print("Setting random seed to", seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False

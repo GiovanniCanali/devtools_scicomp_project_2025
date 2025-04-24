@@ -5,8 +5,3 @@ model:
 
 metric_tracker:
   experiment: "s6"
-
-trainer:
-  optimizer_params:
-    lr: 0.001
-  

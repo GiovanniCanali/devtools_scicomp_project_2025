@@ -1,7 +1,9 @@
+seed: 1999
+
 dataset:
-    sequence_len: 128
+    sequence_len: 256
     batch_size: 64
-    vocab_size: 10
+    vocab_size: 16
     mem_tokens: 8
     selective: False
 

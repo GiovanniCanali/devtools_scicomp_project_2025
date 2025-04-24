@@ -1,3 +1,5 @@
+seed: 883
+
 model:
   model: ssm.model.S4
   block_type: "S4D"
