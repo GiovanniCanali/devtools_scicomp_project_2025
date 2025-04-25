@@ -1,0 +1,29 @@
+seed: 1999
+
+dataset:
+    sequence_len: 128
+    batch_size: 64
+    vocab_size: 16
+    mem_tokens: 8
+    selective: False
+
+trainer:
+    steps: 400000
+    test_steps: 100
+    optimizer_class: torch.optim.Adam
+    optimizer_params:
+        lr: 0.0001
+    device: "cuda"
+
+metric_tracker:
+    logging_steps: 100
+    enable_progress_bar: False
+    patience: 70
+    repo: "/mnt/disk1/folivo/ssm/copy/"
+
+model:
+    n_layers: 2
+    dt_min: 0.001
+    dt_max: 0.1
+    model_dim: 64
+    hid_dim: 16

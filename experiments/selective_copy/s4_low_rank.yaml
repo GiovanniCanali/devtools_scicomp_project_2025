@@ -4,7 +4,7 @@ model:
   method: "convolutional"
   activation: torch.nn.GELU
   hippo: True
-  residual: True
+  residual: False
   layer_norm: True
 
 metric_tracker:

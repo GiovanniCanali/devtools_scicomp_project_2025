@@ -26,16 +26,9 @@ class EarlyStopping:
         :rtype: bool
         """
         if val_loss < self.best_loss:
-            print(
-                f"Validation loss decreased ({self.best_loss:.6f} --> {val_loss:.6f}). "
-            )
             self.best_loss = val_loss
             self.counter = 0
             return True
-
-        print(
-            f"Validation loss did not decrease ({self.best_loss:.6f} --> {val_loss:.6f}). "
-        )
         self.counter += 1
         if self.counter >= self.patience and self.patience > 0:
             self.early_stop = True

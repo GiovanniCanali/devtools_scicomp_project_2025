@@ -1,7 +1,7 @@
 import torch
 from .block import S6Block
-from .block.residual_block import ResidualBlock
 from .block.mixing_block import MixingBlock
+from .block.residual_block import ResidualBlock
 
 
 class S6(torch.nn.Module):
@@ -74,9 +74,8 @@ class S6(torch.nn.Module):
                 ),
                 activation(),
                 MixingBlock(model_dim),
-                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
             )
-            layers.append(tmp if not residual else ResidualBlock(tmp))
+            layers.append(ResidualBlock(tmp) if residual else tmp)
         self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, x):

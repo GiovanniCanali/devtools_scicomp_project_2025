@@ -1,7 +1,0 @@
-model:
-  model: ssm.model.S6
-  residual: True
-  random_real: False
-
-metric_tracker:
-  experiment: "s6"

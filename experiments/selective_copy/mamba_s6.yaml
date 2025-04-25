@@ -1,0 +1,10 @@
+model:
+  model: ssm.model.Mamba
+  expansion_factor: 2
+  kernel_size: 4
+  normalization: True
+  ssm_type: "S6"
+
+metric_tracker:
+    experiment: "mamba_s6"
+  

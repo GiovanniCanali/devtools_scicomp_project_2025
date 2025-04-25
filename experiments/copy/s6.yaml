@@ -1,0 +1,13 @@
+model:
+  model: ssm.model.S6
+  residual: False
+  layer_norm: True
+  real_random: False
+  hid_dim: 16
+
+metric_tracker:
+  experiment: "s6"
+
+optimizer:
+  optimizer_params:
+    lr: 0.0002

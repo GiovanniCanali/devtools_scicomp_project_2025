@@ -111,7 +111,6 @@ class S6Block(torch.nn.Module):
         self.A = torch.nn.Parameter(
             A.repeat(model_dim, 1).unsqueeze(0).unsqueeze(0)
         )
-
         # Initialize the networks to compute matrices B and C
         self.linear = torch.nn.Linear(model_dim, hid_dim * 2)
 

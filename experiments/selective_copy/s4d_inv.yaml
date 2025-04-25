@@ -1,0 +1,13 @@
+model:
+  model: ssm.model.S4
+  block_type: "S4D"
+  method: "convolutional"
+  activation: torch.nn.GELU
+  initialization: "S4D-Inv"
+  discretization: "bilinear"
+  random_real: False
+  residual: False
+  layer_norm: True
+
+metric_tracker:
+    experiment: "s4d_inv"

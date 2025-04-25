@@ -6,9 +6,13 @@ model:
   initialization: "S4D-Real"
   discretization: "bilinear"
   random_real: False
-  residual: True
+  residual: False
   layer_norm: True
+  hid_dim: 32
 
 metric_tracker:
     experiment: "s4d_real"
 
+optimizer:
+  optimizer_params:
+    lr: 0.0002

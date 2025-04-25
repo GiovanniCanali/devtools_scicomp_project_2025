@@ -1,6 +1,5 @@
 import torch
 from .block import S4BaseBlock, S4LowRankBlock, S4DBlock
-from .block.residual_block import ResidualBlock
 from .block.mixing_block import MixingBlock
 
 
@@ -85,7 +84,7 @@ class S4(torch.nn.Module):
         layers = []
         for _ in range(n_layers):
             tmp = torch.nn.Sequential(
-                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
+                *([torch.nn.LayerNorm(model_dim)] if layer_norm else []),
                 block_class(
                     model_dim=model_dim,
                     hid_dim=hid_dim,
@@ -93,12 +92,9 @@ class S4(torch.nn.Module):
                     **kwargs,
                 ),
                 activation(),
-                # Mixing layer
                 MixingBlock(model_dim),
-                # Conditionally add layer normalization
-                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
             )
-            layers.append(tmp if not residual else ResidualBlock(tmp))
+            layers.append(tmp)
         self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, x):

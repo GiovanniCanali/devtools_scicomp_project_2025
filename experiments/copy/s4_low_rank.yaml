@@ -1,13 +1,14 @@
 model:
   model: ssm.model.S4
-  block_type: "S4"
+  block_type: "S4LowRank"
   method: "convolutional"
   activation: torch.nn.GELU
   hippo: True
-  residual: True
+  residual: False
   layer_norm: True
 
 metric_tracker:
-  experiment: "s4"
+  experiment: "s4_low_rank"
+
 
   

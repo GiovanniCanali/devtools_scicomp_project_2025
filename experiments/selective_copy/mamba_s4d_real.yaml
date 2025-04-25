@@ -1,0 +1,14 @@
+model:
+  model: ssm.model.Mamba
+  expansion_factor: 2
+  kernel_size: 4
+  normalization: True
+  ssm_type: "S4D"
+  initialization: "S4D-Real"
+  discretization: "bilinear"
+  method: "convolutional"
+
+metric_tracker:
+    experiment: "mamba_s4d_real"
+
+  
