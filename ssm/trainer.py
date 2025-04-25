@@ -1,9 +1,21 @@
-import os
-import warnings
 import torch
 from tqdm import tqdm
 from torchmetrics import Accuracy
-from .model.block.embedding_block import EmbeddingBlock
+
+
+class Accuracy:
+    def __call__(self, output, target):
+        """
+        Compute the accuracy.
+
+        :param torch.Tensor output: The model output.
+        :param torch.Tensor target: The ground truth labels.
+        :return: The accuracy value.
+        :rtype: float
+        """
+        probs = torch.softmax(output, dim=-1)
+        pred = torch.argmax(probs, dim=-1)
+        return (pred == target).float().sum() / pred.numel()
 
 
 class Trainer:
@@ -20,7 +32,6 @@ class Trainer:
         optimizer_params={"lr": 1e-3},
         scheduler_class=None,
         scheduler_params=None,
-        model_summary=True,
     ):
         """
         Initialize the Trainer class.
@@ -42,7 +53,7 @@ class Trainer:
         :param bool model_summary: Whether to print the model summary.
         """
         self.dataset = iter(dataset)
-        n_classes = dataset.vocab_size
+        self.num_classes = dataset.vocab_size
         self.model = model
         self.steps = steps
         self.metric_tracker = metric_tracker
@@ -59,7 +70,7 @@ class Trainer:
             else scheduler_class(self.optimizer, **scheduler_params)
         )
         self.loss = torch.nn.CrossEntropyLoss()
-        self.accuracy = Accuracy(task="multiclass", num_classes=n_classes)
+        self.accuracy = Accuracy()
         self.mem_tokens = dataset.mem_tokens
         self.model_summary()
 
@@ -140,17 +151,18 @@ class Trainer:
             "test/accuracy", accuracy / self.test_steps, self.test_steps
         )
 
-    def compute_metrics(self, output, y):
+    def compute_metrics(self, output, target):
         """
         Compute the loss and accuracy metrics.
         :param torch.Tensor output: The model output.
-        :param torch.Tensor y: The ground truth labels.
+        :param torch.Tensor target: The ground truth labels.
         :return: The loss and accuracy values.
         :rtype: tuple
         """
-        output = output.permute(0, 2, 1)[..., -self.mem_tokens :]
-        loss = self.loss(output, y)
-        accuracy = self.accuracy(output, y)
+        output = output.view(-1, self.num_classes)
+        target = target.view(-1)
+        loss = self.loss(output, target)
+        accuracy = self.accuracy(output, target)
         return loss, accuracy
 
     def move_to_device(self):
@@ -158,7 +170,6 @@ class Trainer:
         Move the model and loss function to the specified device.
         """
         self.model.to(self.device)
-        self.accuracy.to(self.device)
 
     @staticmethod
     def set_device():
