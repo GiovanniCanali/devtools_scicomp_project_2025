@@ -1,6 +1,5 @@
 import torch
 from tqdm import tqdm
-from torchmetrics import Accuracy
 
 
 class Accuracy:
