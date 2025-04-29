@@ -3,8 +3,11 @@ model:
   expansion_factor: 2
   kernel_size: 4
   normalization: True
-  ssm_type: "S6"
+  ssm_type: "S4LowRank"
+  hippo: True
+  method: "convolutional"
 
 metric_tracker:
-    experiment: "mamba_s6"
+    experiment: "mamba_s4_low_rank"
+
   

@@ -1,14 +1,14 @@
-seed: 1999
+seed: 2603
 
 dataset:
-    sequence_len: 128
+    sequence_len: 1024
     batch_size: 64
     vocab_size: 16
-    mem_tokens: 8
+    mem_tokens: 16
     selective: True
 
 trainer:
-    steps: 400000
+    steps: 200000
     test_steps: 100
     optimizer_class: torch.optim.Adam
     optimizer_params:
@@ -19,7 +19,7 @@ metric_tracker:
     logging_steps: 100
     enable_progress_bar: False
     patience: 70
-    repo: "/mnt/disk1/folivo/ssm/selective_copy/"
+    repo: "ssm_logs/"
 
 model:
     n_layers: 2

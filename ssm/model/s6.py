@@ -1,7 +1,7 @@
 import torch
+from torch.nn import LayerNorm
 from .block import S6Block
 from .block.mixing_block import MixingBlock
-from .block.residual_block import ResidualBlock
 
 
 class S6(torch.nn.Module):
@@ -37,8 +37,7 @@ class S6(torch.nn.Module):
         n_layers=2,
         activation=torch.nn.GELU,
         real_random=False,
-        residual=True,
-        layer_norm=True,
+        normalization=True,
         **kwargs,
     ):
         """
@@ -52,10 +51,8 @@ class S6(torch.nn.Module):
         :param bool real_random: If `True`, the real part of the A matrix of the
             diagonal block is initialized at random between 0 and 1.
             Default is `False`.
-        :param bool residual: If `True`, a residual connection is added to the
-            output of each S6 block. Default is `True`.
-        :param bool layer_norm: If `True`, layer normalization is applied after
-            each S6 block. Default is `True`.
+        :param bool normalization: If `True`, layer normalization is applied
+            after each S6 block. Default is `True`.
         :param dict kwargs: Additional keyword arguments used in the block.
         """
         super().__init__()
@@ -64,18 +61,18 @@ class S6(torch.nn.Module):
         # Initialize the layers
         layers = []
         for _ in range(n_layers):
-            tmp = torch.nn.Sequential(
-                *([torch.nn.RMSNorm(model_dim)] if layer_norm else []),
+            if normalization:
+                layers.append(LayerNorm(model_dim, elementwise_affine=False))
+            layers.append(
                 S6Block(
                     model_dim=model_dim,
                     hid_dim=hid_dim,
                     real_random=real_random,
                     **kwargs,
-                ),
-                activation(),
-                MixingBlock(model_dim),
+                )
             )
-            layers.append(ResidualBlock(tmp) if residual else tmp)
+            layers.append(activation())
+            layers.append(MixingBlock(model_dim))
         self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, x):

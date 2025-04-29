@@ -4,8 +4,7 @@ model:
   method: "convolutional"
   activation: torch.nn.GELU
   hippo: True
-  residual: False
-  layer_norm: True
+  normalization: True
 
 metric_tracker:
   experiment: "s4_low_rank"

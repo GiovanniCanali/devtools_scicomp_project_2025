@@ -5,14 +5,7 @@ model:
   activation: torch.nn.GELU
   initialization: "S4D-Real"
   discretization: "bilinear"
-  random_real: False
-  residual: False
-  layer_norm: True
-  hid_dim: 32
+  normalization: True
 
 metric_tracker:
     experiment: "s4d_real"
-
-optimizer:
-  optimizer_params:
-    lr: 0.0002

@@ -51,8 +51,8 @@ def test_model(config_file):
     model = cli.trainer.model.model
     print(model)
 
-    assert model.layers[0][1].hid_dim == 16
-    assert model.layers[0][1].method == "convolutional"
+    assert model.layers[1].hid_dim == 16
+    assert model.layers[1].method == "convolutional"
 
     shutil.rmtree("tests/logs/testing_logs")
 

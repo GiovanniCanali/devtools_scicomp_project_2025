@@ -1,0 +1,6 @@
+model:
+  model: ssm.model.S6
+  normalization: True
+
+metric_tracker:
+  experiment: "s6"

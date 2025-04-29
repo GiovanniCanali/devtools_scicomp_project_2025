@@ -1,4 +1,5 @@
 import torch
+from torch.nn import LayerNorm
 from .block import H3Block
 
 
@@ -75,6 +76,8 @@ class H3(torch.nn.Module):
         # Initialize the layers
         layers = []
         for _ in range(n_layers):
+            if normalization:
+                layers.append(LayerNorm(model_dim, elementwise_affine=False))
             layers.append(
                 H3Block(
                     model_dim=model_dim,
@@ -91,10 +94,6 @@ class H3(torch.nn.Module):
             )
             layers.append(activation())
             layers.append(torch.nn.Linear(model_dim, model_dim))
-            if normalization:
-                layers.append(
-                    torch.nn.LayerNorm(model_dim, elementwise_affine=False)
-                )
 
         self.layers = torch.nn.Sequential(*layers)
 

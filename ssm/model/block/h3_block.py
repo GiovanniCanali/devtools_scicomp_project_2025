@@ -24,7 +24,8 @@ class H3Block(torch.nn.Module):
         hid_dim,
         method,
         heads,
-        dt=0.1,
+        dt_min=0.001,
+        dt_max=0.1,
         initialization="S4D-Inv",
         discretization="bilinear",
         real_random=False,
@@ -40,7 +41,10 @@ class H3Block(torch.nn.Module):
             are: recurrent, convolutional.
         :param int heads: The number of attention heads. It must be a divisor of
             the input dimension.
-        :param float dt: The time step for discretization. Default is `0.1`.
+        :param float dt_min: The minimum time step for discretization. Default
+            is `0.001`.
+        :param float dt_max: The maximum time step for discretization. Default
+            is `0.1`.
         :param str initialization: The method for initializing the A matrix in
             the diagonal S4 block. Options are: S4D-Inv, S4D-Lin, S4D-Quad,
             S4D-Real, real, complex. Default is `"S4D-Inv"`.
@@ -72,7 +76,8 @@ class H3Block(torch.nn.Module):
             model_dim=model_dim,
             hid_dim=hid_dim,
             method=method,
-            dt=dt,
+            dt_min=dt_min,
+            dt_max=dt_max,
             **kwargs,
         )
 
@@ -81,7 +86,8 @@ class H3Block(torch.nn.Module):
             model_dim=model_dim * self.dh,
             hid_dim=hid_dim,
             method=method,
-            dt=dt,
+            dt_min=dt_min,
+            dt_max=dt_max,
             initialization=initialization,
             discretization=discretization,
             real_random=real_random,

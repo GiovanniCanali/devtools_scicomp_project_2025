@@ -3,16 +3,10 @@ model:
   block_type: "S4D"
   method: "convolutional"
   activation: torch.nn.GELU
-  initialization: "S4D-Real"
+  initialization: "S4D-Inv"
   discretization: "bilinear"
   random_real: False
-  residual: False
-  layer_norm: True
-  hid_dim: 32
+  normalization: True
 
 metric_tracker:
-    experiment: "s4d_real"
-
-optimizer:
-  optimizer_params:
-    lr: 0.0002
+    experiment: "s4d_inv"

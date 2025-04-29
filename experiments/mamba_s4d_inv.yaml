@@ -6,7 +6,6 @@ model:
   ssm_type: "S4D"
   initialization: "S4D-Inv"
   discretization: "bilinear"
-  random_real: False
   method: "convolutional"
 
 

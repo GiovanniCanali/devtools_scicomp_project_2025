@@ -1,4 +1,5 @@
 import torch
+from torch.nn import LayerNorm
 from .block import S4BaseBlock, S4LowRankBlock, S4DBlock
 from .block.mixing_block import MixingBlock
 
@@ -40,8 +41,7 @@ class S4(torch.nn.Module):
         n_layers=2,
         block_type="S4",
         activation=torch.nn.GELU,
-        layer_norm=True,
-        residual=True,
+        normalization=True,
         **kwargs,
     ):
         """
@@ -56,10 +56,8 @@ class S4(torch.nn.Module):
             are: `"S4"`, `"S4D"`, `"S4LowRank"`. Default is `"S4"`.
         :param torch.nn.Module activation: The activation function.
             Default is `torch.nn.ReLU`.
-        :param bool layer_norm: If `True`, layer normalization is applied after
-            each S4 block. Default is `True`.
-        :param bool residual: If `True`, a residual connection is added to the
-            output of each S4 block. Default is `True`.
+        :param bool normalization: If `True`, layer normalization is applied
+            after each S4 block. Default is `True`.
         :param dict kwargs: Additional keyword arguments used in the block.
         :raises ValueError: If the specified `block_type` is not valid.
         """
@@ -83,18 +81,18 @@ class S4(torch.nn.Module):
 
         layers = []
         for _ in range(n_layers):
-            tmp = torch.nn.Sequential(
-                *([torch.nn.LayerNorm(model_dim)] if layer_norm else []),
+            if normalization:
+                layers.append(LayerNorm(model_dim, elementwise_affine=False))
+            layers.append(
                 block_class(
                     model_dim=model_dim,
                     hid_dim=hid_dim,
                     method=method,
                     **kwargs,
-                ),
-                activation(),
-                MixingBlock(model_dim),
+                )
             )
-            layers.append(tmp)
+            layers.append(activation())
+            layers.append(MixingBlock(model_dim))
         self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, x):
