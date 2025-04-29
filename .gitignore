@@ -176,3 +176,6 @@ cython_debug/
 
 #Avoid loading of logs
 logs/*
+
+# Environments
+.envrc
