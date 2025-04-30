@@ -18,8 +18,8 @@ trainer:
 metric_tracker:
     logging_steps: 100
     enable_progress_bar: False
-    patience: 70
-    repo: "ssm_logs/"
+    patience: 50
+    repo: "ssm_logs/selective_copy/"
 
 model:
     n_layers: 2
