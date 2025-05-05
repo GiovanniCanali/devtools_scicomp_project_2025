@@ -118,7 +118,7 @@ class S4DBlock(S4BlockInterface):
         Discretization of the continuous-time dynamics to obtain the matrices
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
-        dt = torch.clamp(self.dt, min=1e-5)
+        dt = self.dt
         tmp = 1 + self.A * dt.unsqueeze(-1) / 2
         tmp2 = 1 - self.A * dt.unsqueeze(-1) / 2
         A_bar = 1 / tmp2 * tmp
@@ -130,7 +130,7 @@ class S4DBlock(S4BlockInterface):
         Discretization of the continuous-time dynamics to obtain the matrices
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
-        dt = torch.clamp(self.dt, min=1e-5)
+        dt = self.dt
         tmp = self.A * dt.unsqueeze(-1)
         A_bar = torch.exp(tmp)
         B_bar = (A_bar - 1) * self.B * dt.unsqueeze(-1) / (tmp + 1e-6)

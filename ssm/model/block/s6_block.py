@@ -148,7 +148,7 @@ class S6Block(torch.nn.Module):
         B, C = self.linear(x).chunk(2, dim=-1)
 
         # Compute dt
-        dt = self.delta_net(x).clamp(1e-5)
+        dt = self.delta_net(x)
 
         # Discretize A and B
         A_bar, B_bar = self._discretize(self.A, B, dt)

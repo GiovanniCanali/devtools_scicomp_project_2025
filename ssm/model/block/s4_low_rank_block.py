@@ -137,7 +137,7 @@ class S4LowRankBlock(S4BlockInterface):
         :return: The convolution kernel K.
         :rtype: torch.Tensor
         """
-        dt = torch.clamp(self.dt, min=1e-5)
+        dt = self.dt
         # Compute the matrices for the Cauchy product
         a0, a1 = self.C.conj(), self.Q
         b0, b1 = self.B, self.P
