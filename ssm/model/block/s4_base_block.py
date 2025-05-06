@@ -123,7 +123,7 @@ class S4BaseBlock(S4BlockInterface):
         Discretization of the continuous-time dynamics to obtain the matrices
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
-        dt = self.dt
+        dt = self.dt.clamp(min=1e-7, max=1e6)
         matrix_1 = self.I + 0.5 * self.A * dt
         matrix_2 = (self.I - 0.5 * self.A * dt).inverse()
         A_bar = matrix_2 @ matrix_1

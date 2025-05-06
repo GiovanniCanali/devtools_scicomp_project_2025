@@ -1,5 +1,6 @@
 import torch
 from torch.nn import LayerNorm
+from torch.nn.modules.normalization import RMSNorm
 from .block import S4BaseBlock, S4LowRankBlock, S4DBlock
 from .block.mixing_block import MixingBlock
 
@@ -82,7 +83,7 @@ class S4(torch.nn.Module):
         layers = []
         for _ in range(n_layers):
             if normalization:
-                layers.append(LayerNorm(model_dim, elementwise_affine=False))
+                layers.append(RMSNorm(model_dim, elementwise_affine=False))
             layers.append(
                 block_class(
                     model_dim=model_dim,
@@ -94,6 +95,11 @@ class S4(torch.nn.Module):
             layers.append(activation())
             layers.append(MixingBlock(model_dim))
         self.layers = torch.nn.Sequential(*layers)
+        self.norm_layer = (
+            RMSNorm(model_dim, elementwise_affine=False)
+            if normalization
+            else None
+        )
 
     def forward(self, x):
         """
@@ -103,7 +109,10 @@ class S4(torch.nn.Module):
         :return: The output tensor.
         :rtype: torch.Tensor
         """
-        return self.layers(x)
+        x = self.layers(x)
+        if self.norm_layer is not None:
+            x = self.norm_layer(x)
+        return x
 
     def change_forward(self, method):
         """

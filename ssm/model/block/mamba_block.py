@@ -23,7 +23,6 @@ class MambaBlock(torch.nn.Module):
         model_dim,
         expansion_factor=2,
         kernel_size=4,
-        normalization=False,
         ssm_type="S4",
         **kwargs,
     ):
@@ -34,8 +33,6 @@ class MambaBlock(torch.nn.Module):
         :param int expansion_factor: The expansion factor for the input
             dimension.
         :param int kernel_size: The kernel size for the convolutional layer.
-        :param bool normalization: Whether to apply layer normalization.
-            Default is `False`.
         :param str ssm_type: The type of SSM block to use. Available options
             are: `"S4"`, `"S4D"`, `"S4LowRank"`, `"S6"`. Default is `"S4"`.
         :param dict kwargs: Additional arguments for the SSM block constructor.
@@ -57,10 +54,6 @@ class MambaBlock(torch.nn.Module):
             padding=kernel_size - 1,
             groups=mamba_dim,
         )
-        if normalization:
-            self.norm = torch.nn.LayerNorm(mamba_dim)
-        else:
-            self.norm = None
 
     def forward(self, x):
         """
@@ -75,8 +68,6 @@ class MambaBlock(torch.nn.Module):
         x = self.silu(x)
         x = self.ssm(x)
         x = x * x_res
-        if self.norm is not None:
-            x = self.norm(x)
         x = self.output_net(x)
         return x
 

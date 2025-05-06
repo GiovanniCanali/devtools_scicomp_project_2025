@@ -27,6 +27,9 @@ class Mamba(torch.nn.Module):
 
         self.model_dim = kwargs["model_dim"]
         self.mamba_blocks = torch.nn.Sequential(*mamba_blocks)
+        self.norm_layer = (
+            torch.nn.RMSNorm(kwargs["model_dim"]) if normalization else None
+        )
 
     def forward(self, x):
         """
@@ -37,4 +40,7 @@ class Mamba(torch.nn.Module):
         :return: Output tensor.
         :rtype: torch.Tensor
         """
-        return self.mamba_blocks(x)
+        x = self.mamba_blocks(x)
+        if self.norm_layer is not None:
+            x = self.norm_layer(x)
+        return x

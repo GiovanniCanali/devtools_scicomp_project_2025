@@ -32,7 +32,6 @@ class DeltaNetwork(torch.nn.Module):
             dt_max=dt_max,
             inverse_softplus=True,
         )
-
         self.project = torch.nn.Linear(dt_rank, model_dim, bias=True)
         dt_init_std = dt_rank**-0.5 * dt_scale
         torch.nn.init.uniform_(self.project.weight, -dt_init_std, dt_init_std)
@@ -148,7 +147,7 @@ class S6Block(torch.nn.Module):
         B, C = self.linear(x).chunk(2, dim=-1)
 
         # Compute dt
-        dt = self.delta_net(x)
+        dt = self.delta_net(x).clamp(min=1e-7, max=1e6)
 
         # Discretize A and B
         A_bar, B_bar = self._discretize(self.A, B, dt)

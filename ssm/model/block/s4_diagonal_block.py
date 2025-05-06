@@ -118,7 +118,7 @@ class S4DBlock(S4BlockInterface):
         Discretization of the continuous-time dynamics to obtain the matrices
         :math:`A_{bar}` and :math:`B_{bar}`.
         """
-        dt = self.dt
+        dt = self.dt.clamp(min=1e-7, max=1e6)
         tmp = 1 + self.A * dt.unsqueeze(-1) / 2
         tmp2 = 1 - self.A * dt.unsqueeze(-1) / 2
         A_bar = 1 / tmp2 * tmp
