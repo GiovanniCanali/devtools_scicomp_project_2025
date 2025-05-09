@@ -1,7 +1,7 @@
 seed: 2603
 
 dataset:
-    sequence_len: 1024
+    sequence_len: 784
     batch_size: 64
     vocab_size: 16
     mem_tokens: 16
@@ -9,16 +9,16 @@ dataset:
 
 trainer:
     steps: 200000
-    test_steps: 100
-    optimizer_class: torch.optim.Adam
+    test_steps: 1000
+    optimizer_class: torch.optim.AdamW
     optimizer_params:
         lr: 0.0001
     device: "cuda"
 
 metric_tracker:
     logging_steps: 100
-    enable_progress_bar: False
-    patience: 50
+    enable_progress_bar: True
+    patience: 200
     repo: "ssm_logs/selective_copy/"
 
 model:
@@ -27,3 +27,4 @@ model:
     dt_max: 0.1
     model_dim: 64
     hid_dim: 16
+  

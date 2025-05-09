@@ -2,7 +2,6 @@ model:
   model: ssm.model.S4
   block_type: "S4LowRank"
   method: "convolutional"
-  activation: torch.nn.GELU
   hippo: True
   normalization: True
 

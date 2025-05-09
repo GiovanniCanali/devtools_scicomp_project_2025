@@ -2,7 +2,6 @@ model:
   model: ssm.model.S4
   block_type: "S4D"
   method: "convolutional"
-  activation: torch.nn.GELU
   initialization: "S4D-Real"
   discretization: "bilinear"
   normalization: True

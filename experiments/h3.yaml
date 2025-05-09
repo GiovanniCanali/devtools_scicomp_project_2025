@@ -1,9 +1,9 @@
 model:
   model: ssm.model.H3
   normalization: True
-  heads: 4
+  heads: 1
   method: "convolutional"
 
 metric_tracker:
-    experiment: "mamba_s6"
+    experiment: "h3"
   
