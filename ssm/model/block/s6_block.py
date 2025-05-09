@@ -1,6 +1,7 @@
 import math
 import torch
 from ...utils import compute_S4DReal, initialize_dt
+from ...pscan import pscan
 
 
 class DeltaNetwork(torch.nn.Module):
@@ -82,6 +83,7 @@ class S6Block(torch.nn.Module):
         dt_max=0.1,
         real_random=False,
         dt_rank=None,
+        scan_type="parallel",
         **kwargs,
     ):
         """
@@ -96,6 +98,8 @@ class S6Block(torch.nn.Module):
         :param bool real_random: If `True`, the real part of the A matrix is
             initialized at random between 0 and 1. Default is `False`.
         :param int dt_rank: The rank of the time step. Default is `1`.
+        :param str scan_type: The type of scan to use. Can be either
+            "sequential" or "parallel". Default is "parallel".
         :param dict kwargs: Additional keyword arguments.
         """
         super().__init__()
@@ -117,6 +121,15 @@ class S6Block(torch.nn.Module):
             model_dim=model_dim, dt_min=dt_min, dt_max=dt_max, dt_rank=dt_rank
         )
         self.D = torch.nn.Parameter(torch.ones(model_dim))
+        if scan_type == "sequential":
+            self.scan = self.sequential_scan
+        elif scan_type == "parallel":
+            self.scan = pscan
+        else:
+            raise ValueError(
+                f"Invalid scan type: {scan_type}. "
+                "Choose either 'sequential' or 'parallel'."
+            )
 
     def _discretize(self, A, B, dt):
         """
@@ -132,7 +145,7 @@ class S6Block(torch.nn.Module):
         tmp = A * dt.unsqueeze(-1)
         A_bar = torch.exp(tmp)
         delta_B = torch.matmul(dt.unsqueeze(-1), B.unsqueeze(2))
-        B_bar = (A_bar - 1) * delta_B / (tmp + 1e-6)
+        B_bar = (A_bar - 1) * delta_B / tmp
         return A_bar, B_bar
 
     def forward(self, x):
@@ -153,52 +166,28 @@ class S6Block(torch.nn.Module):
         A_bar, B_bar = self._discretize(self.A, B, dt)
 
         # Compute the second term for parallel scan
-        term2 = B_bar * x.unsqueeze(-1)
+        B_barX = B_bar * x.unsqueeze(-1)
 
         # Perform parallel scan and compute the output
-        scan = self._parallel_scan(A_bar, term2)
+        scan = self.scan(A_bar, B_barX)
         return torch.sum(scan * C.unsqueeze(2), dim=-1) + self.D * x
 
     @staticmethod
-    def _parallel_scan(a, b):
+    def sequential_scan(A, B):
         """
-        Compute in an efficient way sequences of the form:
+        Sequential scan of the input tensor using the given matrices A and B.
 
-        .. math::
-            x_t = a_t x_{t-1} + b_t
-
-        :param torch.Tensor a: The first tensor.
-        :param torch.Tensor b: The second tensor.
-        :return: The result of the parallel scan.
+        :param torch.Tensor A: A tensor of shape (B, L, D, N).
+        :param torch.Tensor B: Another tensor of shape (B, L, D, N).
+        :return: The output tensor after sequential scan, of shape (B, L, D, N).
         :rtype: torch.Tensor
         """
+        B_, L, D, N = A.shape
+        h = B[:, 0]
+        H_list = [h]
 
-        def _complex_log(input_):
-            """
-            Compute the complex logarithm of a tensor.
+        for t in range(1, L):
+            h = A[:, t] * h + B[:, t]
+            H_list.append(h)
 
-            :param torch.Tensor input_: The input tensor.
-            :return: The complex logarithm of the input tensor.
-            :rtype: torch.Tensor
-            """
-            # Compute real and imaginary parts
-            eps = torch.ones_like(input_) * 1e-6
-            real = input_.abs().maximum(eps).log()
-            imag = (input_ < 0).to(input_.dtype) * torch.pi
-
-            return torch.complex(real, imag)
-
-        # Compute the complex logarithm of a and b
-        log_a = _complex_log(a)
-        log_b = _complex_log(b)
-
-        # Compute the cumulative sum over the sequence length L
-        a_star = torch.cumsum(log_a, dim=1)
-
-        # Padding over the sequence length L
-        a_star = torch.nn.functional.pad(a_star, (0, 0, 0, 0, 1, 0))
-
-        # Compute the logcumsumexp over the sequence length L
-        tmp = torch.logcumsumexp(log_b - a_star[:, 1:], dim=1)
-
-        return torch.exp(a_star[:, 1:] + tmp).real
+        return torch.stack(H_list, dim=1)
