@@ -1,5 +1,5 @@
 H3Block
-===========
+=======
 .. currentmodule:: ssm.model.block
 
 .. autoclass:: H3Block

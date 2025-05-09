@@ -1,5 +1,5 @@
 S4LowRankBlock
-===========
+==============
 .. currentmodule:: ssm.model.block
 
 

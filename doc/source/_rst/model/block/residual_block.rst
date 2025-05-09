@@ -1,5 +1,5 @@
 ResidualBlock
-===========
+=============
 .. currentmodule:: ssm.model.block.residual_block
 
 

@@ -1,5 +1,5 @@
 MambaBlock
-===========
+==========
 .. currentmodule:: ssm.model.block
 
 

@@ -1,5 +1,5 @@
 EmbeddingBlock
-===========
+==============
 .. currentmodule:: ssm.model.block.embedding_block
 
 

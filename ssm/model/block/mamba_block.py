@@ -34,7 +34,7 @@ class MambaBlock(torch.nn.Module):
             dimension.
         :param int kernel_size: The kernel size for the convolutional layer.
         :param str ssm_type: The type of SSM block to use. Available options
-            are: `"S4"`, `"S4D"`, `"S4LowRank"`, `"S6"`. Default is `"S4"`.
+            are `"S4"`, `"S4D"`, `"S4LowRank"`, `"S6"`. Default is `"S4"`.
         :param dict kwargs: Additional arguments for the SSM block constructor.
         :raises ValueError: If an invalid `ssm_type` is provided.
         :raises RuntimeError: If an invalid `ssm_type` is provided.
@@ -74,8 +74,9 @@ class MambaBlock(torch.nn.Module):
     def _initialize_ssm_block(self, ssm_type, **kwargs):
         """
         Initialize the SSM block based on the specified type.
+
         :param str ssm_type: The type of SSM block to use. Available options
-            are: `"S4"`, `"S4D"`, `"S4LowRank"`, `"S6"`.
+            are `"S4"`, `"S4D"`, `"S4LowRank"`, `"S6"`.
         :param dict kwargs: Additional arguments for the SSM block constructor.
         :raises ValueError: If an invalid `ssm_type` is provided.
         """

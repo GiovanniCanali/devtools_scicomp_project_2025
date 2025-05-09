@@ -22,7 +22,7 @@ class S4ShiftBlock(S4BaseBlock):
         y(t) = Ch(t),
 
     where :math:`h(t)` is the hidden state, :math:`x(t)` is the input,
-    :math:`y(t)` is the output, :math:`A`is a hidden-to-hidden diagonal matrix,
+    :math:`y(t)` is the output, :math:`A` is the hidden-to-hidden matrix,
     :math:`B` is the input-to-hidden matrix, and :math:`C` is the
     hidden-to-output matrix.
 

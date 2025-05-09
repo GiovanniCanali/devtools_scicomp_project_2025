@@ -1,5 +1,5 @@
 S4ShiftBlock
-===========
+============
 .. currentmodule:: ssm.model.block
 
 

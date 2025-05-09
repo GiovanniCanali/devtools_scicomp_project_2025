@@ -1,5 +1,5 @@
 Utils
-=======================
+=====
 
 .. autofunction:: ssm.utils.compute_hippo
 .. autofunction:: ssm.utils.compute_S4DInv

@@ -19,7 +19,7 @@ class S4BlockInterface(torch.nn.Module, ABC):
         y(t) = Ch(t),
 
     where :math:`h(t)` is the hidden state, :math:`x(t)` is the input,
-    :math:`y(t)` is the output, :math:`A`is the hidden-to-hidden matrix,
+    :math:`y(t)` is the output, :math:`A` is the hidden-to-hidden matrix,
     :math:`B` is the input-to-hidden matrix, and :math:`C` is the
     hidden-to-output matrix.
 

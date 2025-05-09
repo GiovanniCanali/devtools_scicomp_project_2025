@@ -1,5 +1,5 @@
 S4BlockInterface
-===========
+================
 .. currentmodule:: ssm.model.block.s4_block_interface
 
 

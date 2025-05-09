@@ -1,5 +1,5 @@
 Mamba
-===========
+=====
 .. currentmodule:: ssm.model
 
 

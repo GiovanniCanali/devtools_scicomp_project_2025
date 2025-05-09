@@ -1,5 +1,5 @@
 S6Block
-===========
+=======
 .. currentmodule:: ssm.model.block
 
 

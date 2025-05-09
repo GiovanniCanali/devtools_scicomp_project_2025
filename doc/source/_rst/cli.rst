@@ -1,5 +1,5 @@
 CLI
-===========
+===
 .. currentmodule:: ssm
 
 

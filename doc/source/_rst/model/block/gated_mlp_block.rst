@@ -1,5 +1,5 @@
 Gated MLP Block
-===========
+===============
 .. currentmodule:: ssm.model.block
 
 
