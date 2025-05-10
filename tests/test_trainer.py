@@ -185,26 +185,3 @@ def test_test(model):
     trainer.fit()
     trainer.test()
     shutil.rmtree("tests/logs/")
-
-
-def test_accumulation_steps():
-    embedded_model.model = S4_model
-    metric_tracker = MetricTracker(
-        repo="tests/",
-        experiment="logs",
-        tensorboard_logger=True,
-        logging_steps=10,
-    )
-
-    trainer = Trainer(
-        model=embedded_model,
-        dataset=dataset,
-        steps=2,
-        test_steps=10,
-        accumulation_steps=2,
-        metric_tracker=metric_tracker,
-        device="cpu",
-    )
-
-    trainer.fit()
-    shutil.rmtree("tests/logs/")

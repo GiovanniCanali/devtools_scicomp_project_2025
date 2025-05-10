@@ -24,7 +24,6 @@ class Trainer:
         dataset,
         steps,
         metric_tracker,
-        accumulation_steps=1,
         device=None,
         test_steps=0,
         optimizer_class=torch.optim.Adam,
@@ -39,8 +38,6 @@ class Trainer:
         :param ssm.dataset.CopyDataset dataset: The dataset to be used for
             training.
         :param int steps: The number of training steps.
-        :param int accumulation_steps: The number of steps to accumulate
-            gradients before updating the model parameters.
         :param torch.device device: The device to use for training (CPU or GPU).
         :param int test_steps: The number of test steps.
         :param torch.optim.Optimizer optimizer_class: The optimizer class to use.
@@ -57,7 +54,6 @@ class Trainer:
         self.steps = steps
         self.metric_tracker = metric_tracker
         self.metric_tracker.add_model(model)
-        self.accumulation_steps = accumulation_steps
         self.test_steps = test_steps
         self.device = device if device else self.set_device()
         self.optimizer = optimizer_class(
@@ -81,39 +77,21 @@ class Trainer:
         self.model.train()
         self.metric_tracker.initialize_pbar(self.steps)
 
-        accumulation_counter = 0
-        accumulated_loss = 0.0
-
         for i in self.metric_tracker.pbar:
-            # Get new sample
             x, y = next(self.dataset)
             x, y = x.to(self.device), y.to(self.device)
-
-            # Forward pass and loss computation
+            self.optimizer.zero_grad()
             loss, accuracy = self.compute_metrics(self.model(x), y)
-
-            loss = (
-                loss / self.accumulation_steps
-            )  # Scale the loss for accumulation
             loss.backward()
-
-            # Accumulate loss and increment the counter
-            accumulated_loss += loss
-            accumulation_counter += 1
-
-            # Update the model parameters every accumulation_steps
-            if accumulation_counter % self.accumulation_steps == 0:
-                self.optimizer.step()
-                self.optimizer.zero_grad()
-                # Log the metrics
-                self.metric_tracker.step(
-                    accumulated_loss.item(), accuracy.item()
-                )
-                accumulated_loss = 0.0
-                if self.metric_tracker.stop_training:
-                    break
-                if self.scheduler is not None:
-                    self.scheduler.step()
+            self.optimizer.step()
+            self.metric_tracker.step(
+                loss.item(),
+                accuracy.item(),
+            )
+            if self.metric_tracker.stop_training:
+                break
+            if self.scheduler is not None:
+                self.scheduler.step()
 
         self.metric_tracker.save_model(self.model)
 
