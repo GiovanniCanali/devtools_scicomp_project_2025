@@ -120,9 +120,9 @@ class S4DBlock(S4BlockInterface):
         """
         dt = self.dt.clamp(min=1e-7, max=1e6)
         tmp = 1 + self.A * dt.unsqueeze(-1) / 2
-        tmp2 = 1 - self.A * dt.unsqueeze(-1) / 2
-        A_bar = 1 / tmp2 * tmp
-        B_bar = 1 / tmp2 * self.B * dt.unsqueeze(-1)
+        tmp2 = (1 - self.A * dt.unsqueeze(-1) / 2) ** -1
+        A_bar = tmp2 * tmp
+        B_bar = tmp2 * self.B * dt.unsqueeze(-1)
         return A_bar, B_bar
 
     def _discretize_zoh(self):
