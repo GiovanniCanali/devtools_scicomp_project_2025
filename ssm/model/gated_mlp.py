@@ -10,7 +10,9 @@ class GatedMLP(torch.nn.Module):
     two linear layers with a non-linear activation function.
     """
 
-    def __init__(self, model_dim, hid_dim, n_layers, activation, beta=1.0):
+    def __init__(
+        self, model_dim, hid_dim, n_layers, activation, beta=1.0, **kwargs
+    ):
         """
         Initialization of the Gated MLP model.
 

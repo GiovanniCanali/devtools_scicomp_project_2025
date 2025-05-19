@@ -15,7 +15,7 @@ def test_transformer_constructor(heads, activation):
 
     Transformer(
         model_dim=x.shape[2],
-        hidden_dim=hid_dim,
+        hid_dim=hid_dim,
         heads=heads,
         n_layers=n_layers,
         dropout=dropout,
@@ -26,7 +26,7 @@ def test_transformer_constructor(heads, activation):
     with pytest.raises(ValueError):
         Transformer(
             model_dim=x.shape[2],
-            hidden_dim=hid_dim,
+            hid_dim=hid_dim,
             heads=3,
             n_layers=n_layers,
             dropout=dropout,
@@ -40,7 +40,7 @@ def test_transformer_forward(heads, activation):
 
     model = Transformer(
         model_dim=x.shape[2],
-        hidden_dim=hid_dim,
+        hid_dim=hid_dim,
         heads=heads,
         n_layers=n_layers,
         dropout=dropout,
@@ -57,7 +57,7 @@ def test_transformer_backward(heads, activation):
 
     model = Transformer(
         model_dim=x.shape[2],
-        hidden_dim=hid_dim,
+        hid_dim=hid_dim,
         heads=heads,
         n_layers=n_layers,
         dropout=dropout,

@@ -9,7 +9,7 @@ class Transformer(torch.nn.Module):
     def __init__(
         self,
         model_dim,
-        hidden_dim,
+        hid_dim,
         heads,
         n_layers=2,
         dropout=0.1,
@@ -42,7 +42,7 @@ class Transformer(torch.nn.Module):
         self.encoder_layer = torch.nn.TransformerEncoderLayer(
             d_model=model_dim,
             nhead=heads,
-            dim_feedforward=hidden_dim,
+            dim_feedforward=hid_dim,
             dropout=dropout,
             activation=activation,
             batch_first=True,

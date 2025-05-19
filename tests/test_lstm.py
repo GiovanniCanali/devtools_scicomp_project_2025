@@ -12,7 +12,7 @@ def test_lstm_constructor():
 
     LSTM(
         model_dim=x.shape[2],
-        hidden_dim=hid_dim,
+        hid_dim=hid_dim,
         n_layers=n_layers,
         dropout=dropout,
     )
@@ -22,7 +22,7 @@ def test_lstm_forward():
 
     model = LSTM(
         model_dim=x.shape[2],
-        hidden_dim=hid_dim,
+        hid_dim=hid_dim,
         n_layers=n_layers,
         dropout=dropout,
     )
@@ -35,7 +35,7 @@ def test_lstm_backward():
 
     model = LSTM(
         model_dim=x.shape[2],
-        hidden_dim=hid_dim,
+        hid_dim=hid_dim,
         n_layers=n_layers,
         dropout=dropout,
     )

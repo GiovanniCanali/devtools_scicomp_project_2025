@@ -9,7 +9,7 @@ class LSTM(torch.nn.Module):
     def __init__(
         self,
         model_dim,
-        hidden_dim,
+        hid_dim,
         n_layers=2,
         dropout=0.1,
         **kwargs,
@@ -28,14 +28,14 @@ class LSTM(torch.nn.Module):
         # Initialize the lstm model
         self.lstm = torch.nn.LSTM(
             input_size=model_dim,
-            hidden_size=hidden_dim,
+            hidden_size=hid_dim,
             num_layers=n_layers,
             dropout=dropout,
             batch_first=True,
         )
 
         # Linear layer to project the output to the input dimension
-        self.linear = torch.nn.Linear(hidden_dim, model_dim)
+        self.linear = torch.nn.Linear(hid_dim, model_dim)
 
     def forward(self, x):
         """
