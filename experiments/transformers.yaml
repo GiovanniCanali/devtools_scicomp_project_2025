@@ -1,0 +1,7 @@
+model:
+  model: ssm.model.Transformer
+  heads: 2
+  
+metric_tracker:
+    experiment: "transformers"
+  

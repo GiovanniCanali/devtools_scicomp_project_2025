@@ -1,0 +1,7 @@
+model:
+  model: ssm.model.GatedMLP
+  activation: 'silu'
+  
+metric_tracker:
+    experiment: "gated_mlp"
+  

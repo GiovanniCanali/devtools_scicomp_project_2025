@@ -1,0 +1,7 @@
+model:
+  model: ssm.model.LSTM
+  activation: 'silu'
+  
+metric_tracker:
+    experiment: "lstm"
+  
