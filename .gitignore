@@ -175,3 +175,10 @@ logs/*
 
 # Environments
 .envrc
+
+# PyPI configuration file
+.pypirc
+
+# data files
+*.dat
+*.data
