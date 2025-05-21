@@ -1,4 +1,18 @@
-# Structured State Space Models
+# Development Tools for Scientific Computing
+
+Repository for the PhD course _Development Tools for Scientific Computing_,
+offered at SISSA during the 2024–2025 academic year.
+
+
+## Contacts
+Name: Giovanni Canali
+
+Email: gcanali@sissa.it
+
+PhD Course: AMMA
+
+
+## Structured State Space Models
 
 This repository contains the implementation of **Structured State Space Models** as part of the final project for the course _Development Tools for Scientific Computing_ held at SISSA during the academic year 2024–2025.
 
@@ -6,7 +20,7 @@ Please, find here the [project report](report.md).
 
 **Authors**: @FilippoOlivo, @GiovanniCanali.
 
-## Project Description
+### Project Description
 
 **State Space Models (SSMs)** are an emerging class of deep learning architectures that have demonstrated significant promise in the domain of sequence modeling. These models have recently established state-of-the-art performance in tasks such as time series forecasting and audio generation, outperforming traditional recurrent and convolutional approaches in both accuracy and efficiency.
 
@@ -23,7 +37,7 @@ To ensure consistency and relevance, the evaluation is conducted on synthetic se
 copy task, and selective copy task. These tasks serve as controlled benchmarks to assess the models' ability to retain and manipulate sequential information over long contexts.
 
 
-## Setup Instructions
+### Setup Instructions
 
 Follow these steps to set up the environment:
 
@@ -52,7 +66,7 @@ conda activate ssm-env
 python -m pip install .
 ```
 
-## References
+### References
 - S4 and low-rank S4 blocks: [Efficiently Modeling Long Sequences with Structured State Spaces](https://doi.org/10.48550/arXiv.2111.00396).
 - Diagonal S4 block: [On the Parameterization and Initialization of
 Diagonal State Space Models](https://arxiv.org/pdf/2206.11893).
@@ -60,3 +74,4 @@ Diagonal State Space Models](https://arxiv.org/pdf/2206.11893).
 - Mamba model and S6 block: [Mamba: Linear-Time Sequence Modeling with Selective State Spaces](https://doi.org/10.48550/arXiv.2312.00752).
 - Parallel scan algorithm: [Efficient Parallelization of a Ubiquitous Sequential Computation](https://arxiv.org/abs/2311.06281).
 - Swish activation function: [Searching for Activation Functions](https://doi.org/10.48550/arXiv.1710.05941).
+
