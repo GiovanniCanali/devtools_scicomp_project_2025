@@ -1,0 +1,64 @@
+Timer unit: 1e-06 s
+
+Total time: 0.000257261 s
+File: /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/utils.py
+Function: majority_vote at line 9
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+     9                                           @profile
+    10                                           def majority_vote(neighbors: list[int]) -> int:
+    11       281        257.3      0.9    100.0      return max(set(neighbors), key=neighbors.count)
+
+Total time: 0.184379 s
+File: /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/utils.py
+Function: distance at line 5
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+     5                                           @profile
+     6                                           def distance(point1: list[float], point2: list[float]) -> float:
+     7     19670     184379.3      9.4    100.0      return sum((p1 - p2)**2 for p1, p2 in zip(point1, point2))
+
+Total time: 0.222352 s
+File: /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/classifier.py
+Function: _get_k_nearest_neighbors at line 11
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    11                                               @profile
+    12                                               def _get_k_nearest_neighbors(
+    13                                                       self,
+    14                                                       X: list[list[float]],
+    15                                                       y: list[int],
+    16                                                       x: list[float]
+    17                                                   ) -> list[int]:
+    18       281     218106.8    776.2     98.1          dist = [distance(x, point) for point in X]
+    19       281       3881.3     13.8      1.7          sorted_neighbors = sorted(enumerate(dist), key=lambda pair: pair[1])
+    20       281        327.7      1.2      0.1          k_neighbors = [y[i] for i, _ in sorted_neighbors[:self.k]]
+    21       281         36.3      0.1      0.0          return k_neighbors
+
+Total time: 0.224184 s
+File: /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/classifier.py
+Function: __call__ at line 23
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    23                                               @profile
+    24                                               def __call__(
+    25                                                       self,
+    26                                                       data: tuple[list[list[float]], list[int]],
+    27                                                       new_points: list[list[float]]
+    28                                                   ):
+    29         1          1.0      1.0      0.0          X, y = data
+    30         2     224183.1 112091.6    100.0          return [
+    31                                                       majority_vote(
+    32                                                           self._get_k_nearest_neighbors(X, y, point)
+    33                                                       )
+    34         1          0.1      0.1      0.0              for point in new_points
+    35                                                   ]
+
+  0.00 seconds - /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/utils.py:9 - majority_vote
+  0.18 seconds - /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/utils.py:5 - distance
+  0.22 seconds - /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/classifier.py:11 - _get_k_nearest_neighbors
+  0.22 seconds - /u/g/gcanali/miniconda3/envs/devtools_scicomp/lib/python3.9/site-packages/pyclassify/classifier.py:23 - __call__
