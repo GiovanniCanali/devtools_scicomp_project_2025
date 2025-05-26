@@ -38,7 +38,7 @@ $$
 A_{ij} = -\begin{cases}
 \sqrt{2i+1} \cdot \sqrt{2j +1} & if \quad i>j\\
 i + 1 & if \quad i = j\\
-0 & if \quad i<j
+0 & if \quad i<j\\
 \end{cases}
 $$
 
