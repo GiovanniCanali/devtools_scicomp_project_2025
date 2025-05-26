@@ -2,6 +2,8 @@
 
 This repository contains the implementation of **Structured State Space Models** as part of the final project for the course _Development Tools for Scientific Computing_ held at SISSA during the academic year 2024–2025.
 
+Please, find here the [project report](report.md). 
+
 **Authors**: @FilippoOlivo, @GiovanniCanali.
 
 ## Project Description
@@ -12,7 +14,6 @@ This project investigates **structured variants of SSMs** with a focus on comput
 
 - **S4**
 - **S6**
-- **H3**
 - **Gated MLP**
 - **Mamba**
 
