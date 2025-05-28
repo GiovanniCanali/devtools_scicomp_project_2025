@@ -10,7 +10,6 @@ __all__ = [
     "S6Block",
     "MambaBlock",
     "GatedMLPBlock",
-    "H3Block",
 ]
 
 from .s4_base_block import S4BaseBlock
@@ -20,4 +19,3 @@ from .s4_shift_block import S4ShiftBlock
 from .s6_block import S6Block
 from .mamba_block import MambaBlock
 from .gated_mlp_block import GatedMLPBlock
-from .h3_block import H3Block
